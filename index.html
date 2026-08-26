@@ -1414,7 +1414,7 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             selectedElementId = elId;
-            updateSelectedElementProp('src', e.target.result);
+            updateSelectedElementProp('src', e.target.result, false);
         };
         reader.readAsDataURL(file);
     }
@@ -1641,7 +1641,7 @@
                 window.removeEventListener('pointerup', stopResize);
                 saveState();
                 if (isTemplateCanvas) {
-                    renderTemplateCanvas();
+                    renderTemplateCanvas(false);
                 }
             }
 
@@ -1709,7 +1709,7 @@
                 ${
                     active.format === 'dual'
                         ? `
-                            <select onchange="updateSelectedElementProp('side', this.value)" style="width:auto; padding:0.2rem; font-size:0.8rem; cursor:pointer;">
+                            <select onchange="updateSelectedElementProp('side', this.value, true)" style="width:auto; padding:0.2rem; font-size:0.8rem; cursor:pointer;">
                                 <option value="front" ${el.side === 'front' ? 'selected' : ''}>Move to Front</option>
                                 <option value="back" ${el.side === 'back' ? 'selected' : ''}>Move to Back</option>
                             </select>
@@ -1723,7 +1723,7 @@
             html += `
                 <div class="form-group" style="background:#e2e8f0; padding:0.5rem; border-radius:4px;">
                     <label style="color:#334155; font-weight:bold;">Data Source Mapping</label>
-                    <select onchange="updateSelectedElementProp('dataSource', this.value)">
+                    <select onchange="updateSelectedElementProp('dataSource', this.value, true)">
                         <option value="static" ${el.dataSource === 'static' ? 'selected' : ''}>Static (Same on all cards)</option>
                         <option value="database" ${el.dataSource === 'database' ? 'selected' : ''}>Database (Different per person)</option>
                     </select>
@@ -1758,26 +1758,26 @@
                 <div style="display:flex; gap:1rem;">
                     <div class="form-group" style="flex:1;">
                         <label>Width (px)</label>
-                        <input type="number" value="${el.width || 150}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
+                        <input type="number" value="${el.width || 150}" oninput="updateSelectedElementProp('width', parseInt(this.value), false)">
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label>Height (px)</label>
-                        <input type="number" value="${el.height || 30}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
+                        <input type="number" value="${el.height || 30}" oninput="updateSelectedElementProp('height', parseInt(this.value), false)">
                     </div>
                 </div>
                 <div style="display:flex; gap:1rem;">
                     <div class="form-group" style="flex:1;">
                         <label>Font Size (px)</label>
-                        <input type="number" value="${parseFloat(el.fontSize) || 14}" oninput="updateSelectedElementProp('fontSize', this.value + 'px')">
+                        <input type="number" value="${parseFloat(el.fontSize) || 14}" oninput="updateSelectedElementProp('fontSize', this.value + 'px', false)">
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label>Text Color</label>
-                        <input type="color" value="${el.color || '#000000'}" oninput="updateSelectedElementProp('color', this.value)" onchange="updateSelectedElementProp('color', this.value)">
+                        <input type="color" value="${el.color || '#000000'}" oninput="updateSelectedElementProp('color', this.value, false)" onchange="updateSelectedElementProp('color', this.value, false)">
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Alignment</label>
-                    <select onchange="updateSelectedElementProp('align', this.value)">
+                    <select onchange="updateSelectedElementProp('align', this.value, true)">
                         <option value="left" ${currentAlign === 'left' ? 'selected' : ''}>Left</option>
                         <option value="center" ${currentAlign === 'center' ? 'selected' : ''}>Center</option>
                         <option value="right" ${currentAlign === 'right' ? 'selected' : ''}>Right</option>
@@ -1786,8 +1786,8 @@
                 <div class="form-group">
                     <label>Text Box Background (Optional)</label>
                     <div style="display:flex; gap:0.5rem;">
-                        <input type="color" value="${el.textBg || '#ffffff'}" style="flex:1;" oninput="updateSelectedElementProp('textBg', this.value)">
-                        <button type="button" class="secondary-btn" style="margin-bottom:0;" onclick="updateSelectedElementProp('textBg', '')">Clear</button>
+                        <input type="color" value="${el.textBg || '#ffffff'}" style="flex:1;" oninput="updateSelectedElementProp('textBg', this.value, false)" onchange="updateSelectedElementProp('textBg', this.value, false)">
+                        <button type="button" class="secondary-btn" style="margin-bottom:0;" onclick="updateSelectedElementProp('textBg', '', true)">Clear</button>
                     </div>
                 </div>
             `;
@@ -1813,7 +1813,7 @@
             html += `
                 <div class="form-group">
                     <label>Barcode Type</label>
-                    <select onchange="updateSelectedElementProp('barcodeType', this.value)">
+                    <select onchange="updateSelectedElementProp('barcodeType', this.value, true)">
                         <option value="CODE128" ${currentBType === 'CODE128' ? 'selected' : ''}>Code 128 (Standard Barcode)</option>
                         <option value="QR" ${currentBType === 'QR' ? 'selected' : ''}>QR Code</option>
                         <option value="CODE39" ${currentBType === 'CODE39' ? 'selected' : ''}>Code 39</option>
@@ -1822,11 +1822,11 @@
                 <div style="display:flex; gap:1rem;">
                     <div class="form-group" style="flex:1;">
                         <label>Width (px)</label>
-                        <input type="number" value="${el.width || 140}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
+                        <input type="number" value="${el.width || 140}" oninput="updateSelectedElementProp('width', parseInt(this.value), false)">
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label>Height (px)</label>
-                        <input type="number" value="${el.height || 50}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
+                        <input type="number" value="${el.height || 50}" oninput="updateSelectedElementProp('height', parseInt(this.value), false)">
                     </div>
                 </div>
             `;
@@ -1835,16 +1835,16 @@
                 <div style="display:flex; gap:1rem;">
                     <div class="form-group" style="flex:1;">
                         <label>Width (px)</label>
-                        <input type="number" value="${el.width}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
+                        <input type="number" value="${el.width}" oninput="updateSelectedElementProp('width', parseInt(this.value), false)">
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label>Height (px)</label>
-                        <input type="number" value="${el.height}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
+                        <input type="number" value="${el.height}" oninput="updateSelectedElementProp('height', parseInt(this.value), false)">
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Shape Style / Corners</label>
-                    <select onchange="updateSelectedElementProp('shapeType', this.value)">
+                    <select onchange="updateSelectedElementProp('shapeType', this.value, true)">
                         <option value="rectangle" ${el.shapeType === 'rectangle' ? 'selected' : ''}>Rectangle (Sharp)</option>
                         <option value="rounded" ${el.shapeType === 'rounded' ? 'selected' : ''}>Rounded Corners</option>
                         <option value="pill" ${el.shapeType === 'pill' ? 'selected' : ''}>Pill / Badge</option>
@@ -1853,7 +1853,7 @@
                 </div>
                 <div class="form-group">
                     <label>Shape Color</label>
-                    <input type="color" value="${el.bg || active.themeColor || '#2563eb'}" oninput="updateSelectedElementProp('bg', this.value)" onchange="updateSelectedElementProp('bg', this.value)">
+                    <input type="color" value="${el.bg || active.themeColor || '#2563eb'}" oninput="updateSelectedElementProp('bg', this.value, false)" onchange="updateSelectedElementProp('bg', this.value, false)">
                     ${
                         el.isThemeable
                             ? `<p style="font-size:0.75rem; color:#64748b; margin:0.35rem 0 0;">Linked to Global Theme Color. Custom color will unlink.</p>`
@@ -1871,7 +1871,7 @@
                 html += `
                     <div class="form-group">
                         <label style="color:#059669; font-weight:bold;">Database Column Name</label>
-                        <input type="text" value="${encodeHTML(el.dbField || 'Photo')}" oninput="updateSelectedElementProp('dbField', this.value)">
+                        <input type="text" value="${encodeHTML(el.dbField || 'Photo')}" oninput="updateTextContentDirectly('dbField', this.value)">
                     </div>
                 `;
             } else {
@@ -1887,11 +1887,11 @@
                 <div style="display:flex; gap:1rem;">
                     <div class="form-group" style="flex:1;">
                         <label>Width (px)</label>
-                        <input type="number" value="${el.width || 80}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
+                        <input type="number" value="${el.width || 80}" oninput="updateSelectedElementProp('width', parseInt(this.value), false)">
                     </div>
                     <div class="form-group" style="flex:1;">
                         <label>Height (px)</label>
-                        <input type="number" value="${el.height || 80}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
+                        <input type="number" value="${el.height || 80}" oninput="updateSelectedElementProp('height', parseInt(this.value), false)">
                     </div>
                 </div>
             `;
@@ -1931,7 +1931,7 @@
         renderTemplateCanvas();
     }
 
-    function updateSelectedElementProp(prop, val) {
+    function updateSelectedElementProp(prop, val, redrawEditor = false) {
         const active = getActiveProject();
         const el = active.elements.find(item => item.id === selectedElementId);
         if (!el) return;
@@ -1950,7 +1950,9 @@
 
         saveState();
         renderTemplateCanvas(false);
-        renderElementEditor();
+        if (redrawEditor) {
+            renderElementEditor();
+        }
     }
 
     function deleteSelectedElement(id) {
