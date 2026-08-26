@@ -1247,15 +1247,15 @@
                     }
                     html, body {
                         width: ${w} !important;
-                        height: 100% !important;
+                        height: auto !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: white !important;
-                        overflow: hidden !important;
+                        overflow: visible !important;
                     }
                     .container {
                         width: ${w} !important;
-                        height: 100% !important;
+                        height: auto !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: transparent !important;
@@ -1265,7 +1265,7 @@
                     #print {
                         display: block !important;
                         width: ${w} !important;
-                        height: 100% !important;
+                        height: auto !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: transparent !important;
@@ -1273,7 +1273,7 @@
                     .print-grid {
                         display: block !important;
                         width: ${w} !important;
-                        height: 100% !important;
+                        height: auto !important;
                         margin: 0 !important;
                         padding: 0 !important;
                     }
@@ -1312,7 +1312,7 @@
                         box-shadow: none !important;
                         overflow: hidden !important;
                     }
-                    /* Safely rotate back card 180 degrees during print in landscape mode without causing page overflow */
+                    /* Correctly rotate landscape back card 180 degrees to match hardware flip */
                     ${isLandscape ? `
                     .back-card-wrapper .id-card {
                         transform: rotate(180deg) !important;
