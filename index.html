@@ -576,7 +576,7 @@
 <body>
 
 <!-- ENTITY LOGIN / WORKSPACE MODAL -->
-<div id="entityModal">
+<div id="entityModal" style="display:none;">
     <div class="modal-box">
         <h2>ID Card Workspace</h2>
         <p>Enter your Entity, Company, or Organization Name to access your private designs and databases.</p>
@@ -1026,6 +1026,8 @@
             document.getElementById('entityModal').style.display = 'none';
             document.getElementById('currentEntityDisplay').innerText = currentEntity;
             loadEntityData();
+            renderProjectSelector();
+            renderTemplateCanvas();
         }
     }
 
@@ -1040,7 +1042,8 @@
         document.getElementById('entityModal').style.display = 'none';
         document.getElementById('currentEntityDisplay').innerText = inputVal;
         loadEntityData();
-        location.reload();
+        renderProjectSelector();
+        renderTemplateCanvas();
     }
 
     function switchEntityPrompt() {
