@@ -1319,7 +1319,7 @@
     function addElement(type, side) {
         const active = getActiveProject();
         const newId = 'el_' + Date.now();
-        let newEl = { id: newId, side: side, type: type, x: 50, y: 150 };
+        let newEl = { id: newId, side: side, type: type, x: 102, y: 150 };
 
         if (type === 'shape') {
             newEl.dataSource = 'static';
@@ -1331,11 +1331,11 @@
         } else if (type === 'text') {
             newEl.dataSource = 'static';
             newEl.content = 'New Text';
-            newEl.width = 150;
+            newEl.width = 180;
             newEl.height = 30;
             newEl.fontSize = '14px';
             newEl.color = '#1f2937';
-            newEl.align = 'center'; // Default new text to center
+            newEl.align = 'center'; // Defaults new text to center
         } else if (type === 'photo') {
             newEl.dataSource = 'database';
             newEl.dbField = 'Photo';
@@ -1438,7 +1438,6 @@
             div.style.width = (elData.width || 150) + 'px';
             div.style.height = (elData.height || 30) + 'px';
 
-            // Robust alignment fallback defaulting to center if missing
             const alignment = elData.align || 'center';
 
             if (alignment === 'center') {
