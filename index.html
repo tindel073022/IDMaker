@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Project Dynamic ID Card Designer</title>
+    <title>Multi-Entity ID Card Designer</title>
 
     <style>
         :root {
@@ -23,6 +23,33 @@
             color: #1f2937;
         }
 
+        /* =========================================================
+           ENTITY LOGIN OVERLAY MODAL
+           ========================================================= */
+        #entityModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 1rem;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.2);
+            text-align: center;
+        }
+
+        .modal-box h2 { margin-top: 0; color: #1e293b; }
+        .modal-box p { color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem; }
+
         .container {
             max-width: 1100px;
             margin: 2rem auto;
@@ -32,7 +59,7 @@
         }
 
         /* =========================================================
-           TOP PROJECT BAR
+           TOP PROJECT & ENTITY BAR
            ========================================================= */
 
         .project-bar {
@@ -548,20 +575,36 @@
 
 <body>
 
+<!-- ENTITY LOGIN / WORKSPACE MODAL -->
+<div id="entityModal">
+    <div class="modal-box">
+        <h2>ID Card Workspace</h2>
+        <p>Enter your Entity, Company, or Organization Name to access your private designs and databases.</p>
+        <div class="form-group" style="text-align: left;">
+            <label>Entity / Workspace Name</label>
+            <input type="text" id="entityInputModal" placeholder="e.g. GymKoto">
+        </div>
+        <button class="action-btn" style="width: 100%; margin-top: 0.5rem;" onclick="submitEntityModal()">Enter Workspace</button>
+    </div>
+</div>
+
 <div class="container">
 
     <!-- =========================================================
-         PROJECT BAR
+         TOP PROJECT BAR
          ========================================================= -->
 
     <div class="project-bar">
 
-        <div style="display:flex; align-items:center; gap:1rem;">
-            <strong>Active Design Project:</strong>
-
-            <select id="projectSelector"
-                    onchange="switchProject(this.value)">
-            </select>
+        <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap: wrap;">
+            <div>
+                <strong>Entity:</strong> <span id="currentEntityDisplay" style="color: #38bdf8; font-weight: bold;">-</span>
+                <button onclick="switchEntityPrompt()" style="background:none; border:none; color: #cbd5e1; text-decoration: underline; cursor:pointer; font-size: 0.8rem; margin-left: 0.5rem;">[Switch Entity]</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <strong>Active Project:</strong>
+                <select id="projectSelector" onchange="switchProject(this.value)"></select>
+            </div>
         </div>
 
         <div style="display:flex; gap:0.5rem; flex-wrap: wrap;">
@@ -948,288 +991,113 @@
 <script>
 
     /* =========================================================
-       DEFAULT PROJECT
+       ENTITY & STORAGE MANAGEMENT
        ========================================================= */
 
-    let defaultProjects = [
+    let currentEntity = localStorage.getItem('id_maker_active_entity') || '';
 
+    const defaultProjects = [
         {
             id: 'proj_1',
-
             name: 'Company A ID',
-
             format: 'single',
-
             themeColor: '#2563eb',
-
             bgImage: '',
-
             elements: [
-
-                {
-                    id: 'f_banner',
-                    side: 'front',
-                    type: 'shape',
-                    shapeType: 'rectangle',
-                    dataSource: 'static',
-                    x: -5,
-                    y: 0,
-                    width: 220,
-                    height: 65,
-                    bg: '#2563eb',
-                    isThemeable: true
-                },
-
-                {
-                    id: 'f_org',
-                    side: 'front',
-                    type: 'text',
-                    dataSource: 'static',
-                    content: 'COMPANY NAME',
-                    x: 102,
-                    y: 20,
-                    width: 180,
-                    height: 30,
-                    fontSize: '15px',
-                    color: '#ffffff',
-                    align: 'center'
-                },
-
-                {
-                    id: 'f_photo',
-                    side: 'front',
-                    type: 'photo',
-                    dataSource: 'database',
-                    dbField: 'Photo',
-                    x: 62,
-                    y: 85,
-                    width: 80,
-                    height: 80
-                },
-
-                {
-                    id: 'f_name',
-                    side: 'front',
-                    type: 'text',
-                    dataSource: 'database',
-                    dbField: 'Full Name',
-                    content: '{val}',
-                    x: 102,
-                    y: 190,
-                    width: 180,
-                    height: 30,
-                    fontSize: '18px',
-                    color: '#1f2937',
-                    align: 'center'
-                },
-
-                {
-                    id: 'f_role',
-                    side: 'front',
-                    type: 'text',
-                    dataSource: 'database',
-                    dbField: 'Role',
-                    content: '{val}',
-                    x: 102,
-                    y: 220,
-                    width: 180,
-                    height: 25,
-                    fontSize: '13px',
-                    color: '#6b7280',
-                    align: 'center'
-                },
-
-                {
-                    id: 'f_num',
-                    side: 'front',
-                    type: 'text',
-                    dataSource: 'database',
-                    dbField: 'ID Number',
-                    content: 'ID: {val}',
-                    x: 102,
-                    y: 280,
-                    width: 180,
-                    height: 25,
-                    fontSize: '13px',
-                    color: '#374151',
-                    align: 'center'
-                },
-
-                {
-                    id: 'f_footer',
-                    side: 'front',
-                    type: 'shape',
-                    shapeType: 'rectangle',
-                    dataSource: 'static',
-                    x: -5,
-                    y: 310,
-                    width: 220,
-                    height: 20,
-                    bg: '#2563eb',
-                    isThemeable: true
-                }
-
+                { id: 'f_banner', side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 0, width: 220, height: 65, bg: '#2563eb', isThemeable: true },
+                { id: 'f_org', side: 'front', type: 'text', dataSource: 'static', content: 'COMPANY NAME', x: 102, y: 20, width: 180, height: 30, fontSize: '15px', color: '#ffffff', align: 'center' },
+                { id: 'f_photo', side: 'front', type: 'photo', dataSource: 'database', dbField: 'Photo', x: 62, y: 85, width: 80, height: 80 },
+                { id: 'f_name', side: 'front', type: 'text', dataSource: 'database', dbField: 'Full Name', content: '{val}', x: 102, y: 190, width: 180, height: 30, fontSize: '18px', color: '#1f2937', align: 'center' },
+                { id: 'f_role', side: 'front', type: 'text', dataSource: 'database', dbField: 'Role', content: '{val}', x: 102, y: 220, width: 180, height: 25, fontSize: '13px', color: '#6b7280', align: 'center' },
+                { id: 'f_num', side: 'front', type: 'text', dataSource: 'database', dbField: 'ID Number', content: 'ID: {val}', x: 102, y: 280, width: 180, height: 25, fontSize: '13px', color: '#374151', align: 'center' },
+                { id: 'f_footer', side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 310, width: 220, height: 20, bg: '#2563eb', isThemeable: true }
             ],
-
             db: []
         }
-
     ];
 
+    let projects = [];
+    let activeProjectId = '';
 
-    /* =========================================================
-       STORAGE
-       ========================================================= */
+    function initEntitySession() {
+        if (!currentEntity) {
+            document.getElementById('entityModal').style.display = 'flex';
+        } else {
+            document.getElementById('entityModal').style.display = 'none';
+            document.getElementById('currentEntityDisplay').innerText = currentEntity;
+            loadEntityData();
+        }
+    }
 
-    let storedProjects =
-        JSON.parse(
-            localStorage.getItem('id_multiproject_store')
-        );
+    function submitEntityModal() {
+        const inputVal = document.getElementById('entityInputModal').value.trim();
+        if (!inputVal) {
+            alert("Please enter a valid entity or workspace name.");
+            return;
+        }
+        currentEntity = inputVal.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        localStorage.setItem('id_maker_active_entity', currentEntity);
+        document.getElementById('entityModal').style.display = 'none';
+        document.getElementById('currentEntityDisplay').innerText = inputVal;
+        loadEntityData();
+        location.reload();
+    }
 
-    let projects =
-        Array.isArray(storedProjects) &&
-        storedProjects.length
-            ? storedProjects
-            : defaultProjects;
+    function switchEntityPrompt() {
+        localStorage.removeItem('id_maker_active_entity');
+        location.reload();
+    }
 
-    let activeProjectId =
-        localStorage.getItem('id_active_project_id')
-        || projects[0].id;
-
+    function loadEntityData() {
+        const storageKey = 'id_maker_store_' + currentEntity;
+        const storedProjects = JSON.parse(localStorage.getItem(storageKey));
+        
+        projects = Array.isArray(storedProjects) && storedProjects.length ? storedProjects : JSON.parse(JSON.stringify(defaultProjects));
+        activeProjectId = localStorage.getItem('id_active_project_id_' + currentEntity) || projects[0].id;
+    }
 
     let selectedElementId = null;
-
     let dynamicUploadCache = {};
-
     let generatedElements = [];
-
     let editingRecordId = null;
 
-
-    /* =========================================================
-       DEFAULT IMAGES
-       ========================================================= */
-
-    const defaultAvatar =
-        "data:image/svg+xml;utf8," +
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'>" +
-        "<path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/>" +
-        "</svg>";
-
-
-    const defaultLogo =
-        "data:image/svg+xml;utf8," +
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'>" +
-        "<path d='M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z'/>" +
-        "</svg>";
-
-
-    /* =========================================================
-       ACTIVE PROJECT
-       ========================================================= */
+    const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
+    const defaultLogo = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z'/></svg>";
 
     function getActiveProject() {
-
-        let p =
-            projects.find(
-                proj =>
-                    proj.id === activeProjectId
-            );
-
+        let p = projects.find(proj => proj.id === activeProjectId);
         if (!p) {
-
-            activeProjectId =
-                projects[0].id;
-
-            p =
-                projects[0];
-
+            activeProjectId = projects[0].id;
+            p = projects[0];
         }
-
-        if (!Array.isArray(p.elements))
-            p.elements = [];
-
-        if (!Array.isArray(p.db))
-            p.db = [];
-
-        if (!p.themeColor)
-            p.themeColor = '#2563eb';
-
-        if (!p.format)
-            p.format = 'single';
-
-        if (typeof p.bgImage !== 'string')
-            p.bgImage = '';
-
+        if (!Array.isArray(p.elements)) p.elements = [];
+        if (!Array.isArray(p.db)) p.db = [];
+        if (!p.themeColor) p.themeColor = '#2563eb';
+        if (!p.format) p.format = 'single';
+        if (typeof p.bgImage !== 'string') p.bgImage = '';
 
         p.elements.forEach(el => {
-
-            if (
-                el.type === 'shape' &&
-                el.isThemeable === true
-            ) {
-
+            if (el.type === 'shape' && el.isThemeable === true) {
                 el.bg = p.themeColor;
-
             }
-
         });
-
-
         return p;
-
     }
-
-
-    /* =========================================================
-       SAVE
-       ========================================================= */
 
     function saveState() {
-
-        localStorage.setItem(
-            'id_multiproject_store',
-            JSON.stringify(projects)
-        );
-
-        localStorage.setItem(
-            'id_active_project_id',
-            activeProjectId
-        );
-
+        const storageKey = 'id_maker_store_' + currentEntity;
+        localStorage.setItem(storageKey, JSON.stringify(projects));
+        localStorage.setItem('id_active_project_id_' + currentEntity, activeProjectId);
     }
-
-
-    /* =========================================================
-       RESET
-       ========================================================= */
 
     function resetAllProjects() {
-
-        if (
-            confirm(
-                "Are you sure you want to reset all designs and databases?"
-            )
-        ) {
-
-            localStorage.removeItem(
-                'id_multiproject_store'
-            );
-
-            localStorage.removeItem(
-                'id_active_project_id'
-            );
-
+        if (confirm("Are you sure you want to reset all designs and databases for this entity?")) {
+            const storageKey = 'id_maker_store_' + currentEntity;
+            localStorage.removeItem(storageKey);
+            localStorage.removeItem('id_active_project_id_' + currentEntity);
             location.reload();
-
         }
-
     }
-
-
-    /* =========================================================
-       DELETE CURRENT PROJECT
-       ========================================================= */
 
     function deleteCurrentProject() {
         if (projects.length <= 1) {
@@ -1238,7 +1106,7 @@
         }
 
         const active = getActiveProject();
-        if (confirm(`Are you sure you want to delete project "${active.name}"? This action cannot be undone.`)) {
+        if (confirm(`Are you sure you want to delete project "${active.name}"?`)) {
             projects = projects.filter(p => p.id !== activeProjectId);
             activeProjectId = projects[0].id;
             saveState();
@@ -1256,1142 +1124,301 @@
         }
     }
 
-
-    /* =========================================================
-       PROJECT SELECTOR
-       ========================================================= */
-
     function renderProjectSelector() {
-
-        const selector =
-            document.getElementById(
-                'projectSelector'
-            );
-
-        if (!selector)
-            return;
-
+        const selector = document.getElementById('projectSelector');
+        if (!selector) return;
         selector.innerHTML = '';
 
-
         projects.forEach(p => {
-
-            const opt =
-                document.createElement(
-                    'option'
-                );
-
-            opt.value =
-                p.id;
-
-            opt.innerText =
-                p.name;
-
-            if (
-                p.id ===
-                activeProjectId
-            )
-                opt.selected = true;
-
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.innerText = p.name;
+            if (p.id === activeProjectId) opt.selected = true;
             selector.appendChild(opt);
-
         });
 
+        const active = getActiveProject();
+        document.getElementById('projectNameInput').value = active.name;
+        document.getElementById('cardFormat').value = active.format;
+        document.getElementById('themeColor').value = active.themeColor;
+        document.getElementById('dbProjectNameDisplay').innerText = active.name;
+        document.getElementById('printProjectNameDisplay').innerText = active.name;
+        document.getElementById('dbCountBadge').innerText = active.db.length;
 
-        const active =
-            getActiveProject();
-
-
-        document.getElementById(
-            'projectNameInput'
-        ).value =
-            active.name;
-
-
-        document.getElementById(
-            'cardFormat'
-        ).value =
-            active.format;
-
-
-        document.getElementById(
-            'themeColor'
-        ).value =
-            active.themeColor;
-
-
-        document.getElementById(
-            'dbProjectNameDisplay'
-        ).innerText =
-            active.name;
-
-
-        document.getElementById(
-            'printProjectNameDisplay'
-        ).innerText =
-            active.name;
-
-
-        document.getElementById(
-            'dbCountBadge'
-        ).innerText =
-            active.db.length;
-
-
-        document.documentElement.style.setProperty(
-            '--primary',
-            active.themeColor
-        );
-
-
+        document.documentElement.style.setProperty('--primary', active.themeColor);
         updateFormatUI();
-
     }
-
-
-    /* =========================================================
-       SWITCH PROJECT
-       ========================================================= */
 
     function switchProject(id) {
-
-        activeProjectId =
-            id;
-
-        selectedElementId =
-            null;
-
+        activeProjectId = id;
+        selectedElementId = null;
         resetDatabaseForm();
-
         saveState();
-
         renderProjectSelector();
-
         renderTemplateCanvas();
 
-
-        if (
-            document
-                .getElementById('database')
-                .classList.contains('active')
-        ) {
-
+        if (document.getElementById('database').classList.contains('active')) {
             renderDatabaseForm();
-
             renderTable();
-
         }
-
-
-        if (
-            document
-                .getElementById('print')
-                .classList.contains('active')
-        ) {
-
+        if (document.getElementById('print').classList.contains('active')) {
             generateCards();
-
         }
-
     }
-
-
-    /* =========================================================
-       CREATE PROJECT
-       ========================================================= */
 
     function createNewProject() {
-
-        const timestamp =
-            Date.now();
-
-        const newId =
-            'proj_' + timestamp;
-
+        const timestamp = Date.now();
+        const newId = 'proj_' + timestamp;
 
         const newProj = {
-
-            id:
-                newId,
-
-            name:
-                'Design Project ' +
-                (projects.length + 1),
-
-            format:
-                'single',
-
-            themeColor:
-                '#059669',
-
-            bgImage:
-                '',
-
+            id: newId,
+            name: 'Design Project ' + (projects.length + 1),
+            format: 'single',
+            themeColor: '#059669',
+            bgImage: '',
             elements: [
-
-                {
-                    id:
-                        'f_banner_' +
-                        timestamp,
-
-                    side:
-                        'front',
-
-                    type:
-                        'shape',
-
-                    shapeType:
-                        'rectangle',
-
-                    dataSource:
-                        'static',
-
-                    x:
-                        -5,
-
-                    y:
-                        0,
-
-                    width:
-                        220,
-
-                    height:
-                        65,
-
-                    bg:
-                        '#059669',
-
-                    isThemeable:
-                        true
-                },
-
-                {
-                    id:
-                        'f_name_' +
-                        timestamp,
-
-                    side:
-                        'front',
-
-                    type:
-                        'text',
-
-                    dataSource:
-                        'database',
-
-                    dbField:
-                        'Full Name',
-
-                    content:
-                        '{val}',
-
-                    x:
-                        102,
-
-                    y:
-                        150,
-
-                    width:
-                        180,
-
-                    height:
-                        30,
-
-                    fontSize:
-                        '18px',
-
-                    color:
-                        '#1f2937',
-
-                    align:
-                        'center'
-                }
-
+                { id: 'f_banner_' + timestamp, side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 0, width: 220, height: 65, bg: '#059669', isThemeable: true },
+                { id: 'f_name_' + timestamp, side: 'front', type: 'text', dataSource: 'database', dbField: 'Full Name', content: '{val}', x: 102, y: 150, width: 180, height: 30, fontSize: '18px', color: '#1f2937', align: 'center' }
             ],
-
             db: []
-
         };
 
-
-        projects.push(
-            newProj
-        );
-
-        switchProject(
-            newId
-        );
-
+        projects.push(newProj);
+        switchProject(newId);
     }
-
-
-    /* =========================================================
-       PROJECT NAME
-       ========================================================= */
 
     function updateProjectName(val) {
-
-        const active =
-            getActiveProject();
-
-        active.name =
-            val;
-
+        const active = getActiveProject();
+        active.name = val;
         saveState();
-
         renderProjectSelector();
-
     }
-
-
-    /* =========================================================
-       HTML ENCODING
-       ========================================================= */
 
     function encodeHTML(str) {
-
-        if (
-            str === undefined ||
-            str === null
-        )
-            return '';
-
-        return String(str)
-            .replace(
-                /&/g,
-                '&amp;'
-            )
-            .replace(
-                /</g,
-                '&lt;'
-            )
-            .replace(
-                />/g,
-                '&gt;'
-            )
-            .replace(
-                /"/g,
-                '&quot;'
-            );
-
+        return str === undefined || str === null ? '' : String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-
-    /* =========================================================
-       OUTSIDE CLICK
-       ========================================================= */
-
-    document.addEventListener(
-        'pointerdown',
-        function(e) {
-
-            if (
-                !e.target.closest(
-                    '.card-element'
-                ) &&
-                !e.target.closest(
-                    '#elementEditorPanel'
-                ) &&
-                !e.target.closest(
-                    '#printPhotoTools'
-                )
-            ) {
-
-                selectedElementId =
-                    null;
-
-                highlightSelectedElement();
-
-                renderElementEditor();
-
-                document.getElementById(
-                    'printPhotoTools'
-                ).style.display =
-                    'none';
-
-            }
-
+    document.addEventListener('pointerdown', function(e) {
+        if (!e.target.closest('.card-element') && !e.target.closest('#elementEditorPanel') && !e.target.closest('#printPhotoTools')) {
+            selectedElementId = null;
+            highlightSelectedElement();
+            renderElementEditor();
+            document.getElementById('printPhotoTools').style.display = 'none';
         }
-    );
+    });
 
+    function switchTab(tabId, clickedButton) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
-    /* =========================================================
-       SWITCH TAB
-       ========================================================= */
+        document.getElementById(tabId).classList.add('active');
+        if (clickedButton) clickedButton.classList.add('active');
 
-    function switchTab(
-        tabId,
-        clickedButton
-    ) {
-
-        document
-            .querySelectorAll(
-                '.tab-content'
-            )
-            .forEach(
-                tab =>
-                    tab.classList.remove(
-                        'active'
-                    )
-            );
-
-
-        document
-            .querySelectorAll(
-                '.tab-btn'
-            )
-            .forEach(
-                btn =>
-                    btn.classList.remove(
-                        'active'
-                    )
-            );
-
-
-        document
-            .getElementById(
-                tabId
-            )
-            .classList.add(
-                'active'
-            );
-
-
-        if (clickedButton)
-            clickedButton.classList.add(
-                'active'
-            );
-
-
-        if (
-            tabId ===
-            'database'
-        ) {
-
+        if (tabId === 'database') {
             renderDatabaseForm();
-
             renderTable();
-
-        }
-
-        else if (
-            tabId ===
-            'print'
-        ) {
-
+        } else if (tabId === 'print') {
             generateCards();
-
-        }
-
-        else if (
-            tabId ===
-            'design'
-        ) {
-
+        } else if (tabId === 'design') {
             renderTemplateCanvas();
-
-            document.getElementById(
-                'printPhotoTools'
-            ).style.display =
-                'none';
-
+            document.getElementById('printPhotoTools').style.display = 'none';
         }
-
     }
-
-
-    /* =========================================================
-       FORMAT
-       ========================================================= */
 
     function updateFormat() {
-
-        const active =
-            getActiveProject();
-
-        active.format =
-            document.getElementById(
-                'cardFormat'
-            ).value;
-
+        const active = getActiveProject();
+        active.format = document.getElementById('cardFormat').value;
         saveState();
-
         updateFormatUI();
-
         renderElementEditor();
-
-        if (
-            document
-                .getElementById('print')
-                .classList.contains('active')
-        ) {
-
+        if (document.getElementById('print').classList.contains('active')) {
             generateCards();
-
         }
-
     }
-
 
     function updateFormatUI() {
-
-        const active =
-            getActiveProject();
-
-
-        document.getElementById(
-            'backCanvasContainer'
-        ).style.display =
-            active.format === 'dual'
-                ? 'flex'
-                : 'none';
-
-
-        document.getElementById(
-            'addBackControls'
-        ).style.display =
-            active.format === 'dual'
-                ? 'block'
-                : 'none';
-
+        const active = getActiveProject();
+        document.getElementById('backCanvasContainer').style.display = active.format === 'dual' ? 'flex' : 'none';
+        document.getElementById('addBackControls').style.display = active.format === 'dual' ? 'block' : 'none';
     }
-
-
-    /* =========================================================
-       THEME COLOR
-       ========================================================= */
 
     function updateThemeColor() {
+        const active = getActiveProject();
+        const colorInput = document.getElementById('themeColor');
+        if (!colorInput) return;
 
-        const active =
-            getActiveProject();
+        const newColor = colorInput.value;
+        active.themeColor = newColor;
+        document.documentElement.style.setProperty('--primary', newColor);
 
-        const colorInput =
-            document.getElementById(
-                'themeColor'
-            );
-
-        if (!colorInput)
-            return;
-
-
-        const newColor =
-            colorInput.value;
-
-
-        active.themeColor =
-            newColor;
-
-
-        document.documentElement.style.setProperty(
-            '--primary',
-            newColor
-        );
-
-
-        active.elements.forEach(
-            el => {
-
-                if (
-                    el.type === 'shape' &&
-                    el.isThemeable === true
-                ) {
-
-                    el.bg =
-                        newColor;
-
-                }
-
+        active.elements.forEach(el => {
+            if (el.type === 'shape' && el.isThemeable === true) {
+                el.bg = newColor;
             }
-        );
-
+        });
 
         saveState();
-
-
         renderTemplateCanvas();
 
-
-        const printTab =
-            document.getElementById(
-                'print'
-            );
-
-        if (
-            printTab &&
-            printTab.classList.contains(
-                'active'
-            )
-        ) {
-
+        const printTab = document.getElementById('print');
+        if (printTab && printTab.classList.contains('active')) {
             generateCards();
-
         }
-
     }
-
-
-    /* =========================================================
-       BACKGROUND IMAGE
-       ========================================================= */
 
     function handleBgImageUpload(event) {
+        const file = event.target.files[0];
+        const active = getActiveProject();
+        if (!file) return;
 
-        const file =
-            event.target.files[0];
-
-        const active =
-            getActiveProject();
-
-
-        if (!file)
-            return;
-
-
-        const reader =
-            new FileReader();
-
-
-        reader.onload =
-            function(e) {
-
-                active.bgImage =
-                    e.target.result;
-
-                saveState();
-
-                applyBackgroundsToCanvases();
-
-
-                if (
-                    document
-                        .getElementById('print')
-                        .classList.contains('active')
-                ) {
-
-                    generateCards();
-
-                }
-
-            };
-
-
-        reader.readAsDataURL(
-            file
-        );
-
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            active.bgImage = e.target.result;
+            saveState();
+            applyBackgroundsToCanvases();
+            if (document.getElementById('print').classList.contains('active')) {
+                generateCards();
+            }
+        };
+        reader.readAsDataURL(file);
     }
-
 
     function removeBgImage() {
-
-        const active =
-            getActiveProject();
-
-        active.bgImage =
-            '';
-
-
+        const active = getActiveProject();
+        active.bgImage = '';
         saveState();
-
         applyBackgroundsToCanvases();
-
-
-        if (
-            document
-                .getElementById('print')
-                .classList.contains('active')
-        ) {
-
+        if (document.getElementById('print').classList.contains('active')) {
             generateCards();
-
         }
-
     }
-
-
-    /* =========================================================
-       APPLY BACKGROUNDS
-       ========================================================= */
 
     function applyBackgroundsToCanvases() {
+        const active = getActiveProject();
+        const front = document.getElementById('templateCanvasFront');
+        const back = document.getElementById('templateCanvasBack');
+        const backgroundImage = active.bgImage || '';
 
-        const active =
-            getActiveProject();
-
-
-        const front =
-            document.getElementById(
-                'templateCanvasFront'
-            );
-
-
-        const back =
-            document.getElementById(
-                'templateCanvasBack'
-            );
-
-
-        const backgroundImage =
-            active.bgImage ||
-            '';
-
-
-        [
-            front,
-            back
-        ].forEach(
-            card => {
-
-                if (!card)
-                    return;
-
-
-                card.style.setProperty(
-                    'background-color',
-                    'white',
-                    'important'
-                );
-
-
-                if (backgroundImage) {
-
-                    card.style.setProperty(
-                        'background-image',
-                        `url("${backgroundImage}")`,
-                        'important'
-                    );
-
-                }
-                else {
-
-                    card.style.setProperty(
-                        'background-image',
-                        'none',
-                        'important'
-                    );
-
-                }
-
-
-                card.style.backgroundSize =
-                    'cover';
-
-                card.style.backgroundPosition =
-                    'center';
-
-                card.style.backgroundRepeat =
-                    'no-repeat';
-
+        [front, back].forEach(card => {
+            if (!card) return;
+            card.style.setProperty('background-color', 'white', 'important');
+            if (backgroundImage) {
+                card.style.setProperty('background-image', `url("${backgroundImage}")`, 'important');
+            } else {
+                card.style.setProperty('background-image', 'none', 'important');
             }
-        );
-
+            card.style.backgroundSize = 'cover';
+            card.style.backgroundPosition = 'center';
+            card.style.backgroundRepeat = 'no-repeat';
+        });
     }
 
+    function addElement(type, side) {
+        const active = getActiveProject();
+        const newId = 'el_' + Date.now();
+        let newEl = { id: newId, side: side, type: type, x: 50, y: 150 };
 
-    /* =========================================================
-       ADD ELEMENT
-       ========================================================= */
-
-    function addElement(
-        type,
-        side
-    ) {
-
-        const active =
-            getActiveProject();
-
-
-        const newId =
-            'el_' +
-            Date.now();
-
-
-        let newEl = {
-
-            id:
-                newId,
-
-            side:
-                side,
-
-            type:
-                type,
-
-            x:
-                50,
-
-            y:
-                150
-
-        };
-
-
-        if (
-            type ===
-            'shape'
-        ) {
-
-            newEl.dataSource =
-                'static';
-
-            newEl.width =
-                100;
-
-            newEl.height =
-                30;
-
-            newEl.shapeType =
-                'rectangle';
-
-            newEl.bg =
-                active.themeColor;
-
-            newEl.isThemeable =
-                true;
-
+        if (type === 'shape') {
+            newEl.dataSource = 'static';
+            newEl.width = 100;
+            newEl.height = 30;
+            newEl.shapeType = 'rectangle';
+            newEl.bg = active.themeColor;
+            newEl.isThemeable = true;
+        } else if (type === 'text') {
+            newEl.dataSource = 'static';
+            newEl.content = 'New Text';
+            newEl.width = 150;
+            newEl.height = 30;
+            newEl.fontSize = '14px';
+            newEl.color = '#1f2937';
+            newEl.align = 'left';
+        } else if (type === 'photo') {
+            newEl.dataSource = 'database';
+            newEl.dbField = 'Photo';
+            newEl.width = 80;
+            newEl.height = 80;
         }
 
-        else if (
-            type ===
-            'text'
-        ) {
-
-            newEl.dataSource =
-                'static';
-
-            newEl.content =
-                'New Text';
-
-            newEl.width =
-                150;
-
-            newEl.height =
-                30;
-
-            newEl.fontSize =
-                '14px';
-
-            newEl.color =
-                '#1f2937';
-
-            newEl.align =
-                'left';
-
-        }
-
-        else if (
-            type ===
-            'photo'
-        ) {
-
-            newEl.dataSource =
-                'database';
-
-            newEl.dbField =
-                'Photo';
-
-            newEl.width =
-                80;
-
-            newEl.height =
-                80;
-
-        }
-
-
-        active.elements.push(
-            newEl
-        );
-
-
+        active.elements.push(newEl);
         saveState();
-
         renderTemplateCanvas();
-
     }
 
+    function handleLogoUpload(event, side) {
+        const file = event.target.files[0];
+        const active = getActiveProject();
+        if (!file) return;
 
-    /* =========================================================
-       LOGO UPLOAD
-       ========================================================= */
-
-    function handleLogoUpload(
-        event,
-        side
-    ) {
-
-        const file =
-            event.target.files[0];
-
-        const active =
-            getActiveProject();
-
-
-        if (!file)
-            return;
-
-
-        const reader =
-            new FileReader();
-
-
-        reader.onload =
-            function(e) {
-
-                active.elements.push({
-
-                    id:
-                        'el_logo_' +
-                        Date.now(),
-
-                    side:
-                        side,
-
-                    type:
-                        'logo',
-
-                    dataSource:
-                        'static',
-
-                    x:
-                        70,
-
-                    y:
-                        130,
-
-                    width:
-                        60,
-
-                    height:
-                        60,
-
-                    src:
-                        e.target.result
-
-                });
-
-
-                saveState();
-
-                renderTemplateCanvas();
-
-            };
-
-
-        reader.readAsDataURL(
-            file
-        );
-
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            active.elements.push({
+                id: 'el_logo_' + Date.now(),
+                side: side,
+                type: 'logo',
+                dataSource: 'static',
+                x: 70,
+                y: 130,
+                width: 60,
+                height: 60,
+                src: e.target.result
+            });
+            saveState();
+            renderTemplateCanvas();
+        };
+        reader.readAsDataURL(file);
     }
 
+    function handleStaticElementUpload(event, elId) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    /* =========================================================
-       STATIC IMAGE UPLOAD
-       ========================================================= */
-
-    function handleStaticElementUpload(
-        event,
-        elId
-    ) {
-
-        const file =
-            event.target.files[0];
-
-
-        if (!file)
-            return;
-
-
-        const reader =
-            new FileReader();
-
-
-        reader.onload =
-            function(e) {
-
-                selectedElementId =
-                    elId;
-
-
-                updateSelectedElementProp(
-                    'src',
-                    e.target.result
-                );
-
-            };
-
-
-        reader.readAsDataURL(
-            file
-        );
-
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            selectedElementId = elId;
+            updateSelectedElementProp('src', e.target.result);
+        };
+        reader.readAsDataURL(file);
     }
 
+    function renderTemplateCanvas(updateEditor = true) {
+        const active = getActiveProject();
+        const frontCanvas = document.getElementById('templateCanvasFront');
+        const backCanvas = document.getElementById('templateCanvasBack');
 
-    /* =========================================================
-       RENDER TEMPLATE
-       ========================================================= */
-
-    function renderTemplateCanvas(
-        updateEditor = true
-    ) {
-
-        const active =
-            getActiveProject();
-
-
-        const frontCanvas =
-            document.getElementById(
-                'templateCanvasFront'
-            );
-
-
-        const backCanvas =
-            document.getElementById(
-                'templateCanvasBack'
-            );
-
-
-        if (frontCanvas)
-            frontCanvas.innerHTML =
-                '';
-
-
-        if (backCanvas)
-            backCanvas.innerHTML =
-                '';
-
+        if (frontCanvas) frontCanvas.innerHTML = '';
+        if (backCanvas) backCanvas.innerHTML = '';
 
         applyBackgroundsToCanvases();
 
-
-        active.elements.forEach(
-            el => {
-
-                const div =
-                    createDOMElement(
-                        el,
-                        null,
-                        1.75,
-                        true
-                    );
-
-
-                if (
-                    el.side ===
-                    'front' &&
-                    frontCanvas
-                ) {
-
-                    frontCanvas.appendChild(
-                        div
-                    );
-
-                }
-
-                else if (
-                    el.side ===
-                    'back' &&
-                    backCanvas
-                ) {
-
-                    backCanvas.appendChild(
-                        div
-                    );
-
-                }
-
+        active.elements.forEach(el => {
+            const div = createDOMElement(el, null, 1.75, true);
+            if (el.side === 'front' && frontCanvas) {
+                frontCanvas.appendChild(div);
+            } else if (el.side === 'back' && backCanvas) {
+                backCanvas.appendChild(div);
             }
-        );
+        });
 
-
-        if (updateEditor)
-            renderElementEditor();
-        else
-            highlightSelectedElement();
-
+        if (updateEditor) renderElementEditor();
+        else highlightSelectedElement();
     }
 
+    function createDOMElement(elData, recordData, scaleFactor = 1, isTemplateCanvas = false) {
+        const active = getActiveProject();
+        const div = document.createElement('div');
+        div.className = 'card-element';
+        div.style.left = elData.x + 'px';
+        div.style.top = elData.y + 'px';
+        div.dataset.id = elData.uniqueId || elData.id;
 
-    /* =========================================================
-       CREATE DOM ELEMENT
-       ========================================================= */
+        if (elData.type === 'shape') {
+            div.className += ' el-shape';
+            div.style.width = (elData.width || 100) + 'px';
+            div.style.height = (elData.height || 30) + 'px';
 
-    function createDOMElement(
-        elData,
-        recordData,
-        scaleFactor = 1,
-        isTemplateCanvas = false
-    ) {
-
-        const active =
-            getActiveProject();
-
-
-        const div =
-            document.createElement(
-                'div'
-            );
-
-
-        div.className =
-            'card-element';
-
-
-        div.style.left =
-            elData.x +
-            'px';
-
-
-        div.style.top =
-            elData.y +
-            'px';
-
-
-        div.dataset.id =
-            elData.uniqueId ||
-            elData.id;
-
-
-        /* =====================================================
-           SHAPE
-           ===================================================== */
-
-        if (
-            elData.type ===
-            'shape'
-        ) {
-
-            div.className +=
-                ' el-shape';
-
-
-            div.style.width =
-                (elData.width || 100) +
-                'px';
-
-
-            div.style.height =
-                (elData.height || 30) +
-                'px';
-
-
-            const shapeColor =
-                elData.isThemeable === true
-                    ? active.themeColor
-                    : (
-                        elData.bg ||
-                        active.themeColor
-                    );
-
-
-            div.style.setProperty(
-                'background-color',
-                shapeColor,
-                'important'
-            );
-
+            const shapeColor = elData.isThemeable === true ? active.themeColor : (elData.bg || active.themeColor);
+            div.style.setProperty('background-color', shapeColor, 'important');
 
             if (elData.shapeType === 'rounded') {
                 div.style.borderRadius = '8px';
@@ -2402,48 +1429,16 @@
             } else {
                 div.style.borderRadius = '0px';
             }
+        } else if (elData.type === 'text') {
+            div.className += ' el-text';
+            div.style.fontSize = elData.fontSize || '14px';
+            div.style.width = (elData.width || 150) + 'px';
+            div.style.height = (elData.height || 30) + 'px';
 
-        }
-
-
-        /* =====================================================
-           TEXT
-           ===================================================== */
-
-        else if (
-            elData.type ===
-            'text'
-        ) {
-
-            div.className +=
-                ' el-text';
-
-
-            div.style.fontSize =
-                elData.fontSize ||
-                '14px';
-
-
-            div.style.width =
-                (elData.width || 150) +
-                'px';
-
-
-            div.style.height =
-                (elData.height || 30) +
-                'px';
-
-
-            if (
-                elData.align ===
-                'center'
-            ) {
+            if (elData.align === 'center') {
                 div.style.justifyContent = 'center';
                 div.style.textAlign = 'center';
-            } else if (
-                elData.align ===
-                'right'
-            ) {
+            } else if (elData.align === 'right') {
                 div.style.justifyContent = 'flex-end';
                 div.style.textAlign = 'right';
             } else {
@@ -2451,758 +1446,229 @@
                 div.style.textAlign = 'left';
             }
 
-
-            let displayText =
-                '';
-
-
-            if (
-                elData.dataSource ===
-                'database'
-            ) {
-
-                const dbVal =
-                    recordData &&
-                    recordData.fields
-                        ? (
-                            recordData.fields[
-                                elData.dbField
-                            ] || ''
-                        )
-                        : (
-                            `[${elData.dbField || '?'}]`
-                        );
-
-
-                const mask =
-                    elData.content ||
-                    '{val}';
-
-
-                displayText =
-                    mask.includes(
-                        '{val}'
-                    )
-                        ? mask.replace(
-                            '{val}',
-                            dbVal
-                        )
-                        : dbVal;
-
+            let displayText = '';
+            if (elData.dataSource === 'database') {
+                const dbVal = recordData && recordData.fields ? (recordData.fields[elData.dbField] || '') : `[${elData.dbField || '?'}]`;
+                const mask = elData.content || '{val}';
+                displayText = mask.includes('{val}') ? mask.replace('{val}', dbVal) : dbVal;
+            } else {
+                displayText = elData.content || '';
             }
 
-            else {
-
-                displayText =
-                    elData.content ||
-                    '';
-
+            const span = document.createElement('span');
+            span.innerText = displayText;
+            span.style.setProperty('color', elData.color || '#000000', 'important');
+            div.appendChild(span);
+        } else if (elData.type === 'photo' || elData.type === 'logo') {
+            let imgSrc = elData.src;
+            if (elData.dataSource === 'database') {
+                imgSrc = recordData && recordData.fields && recordData.fields[elData.dbField] ? recordData.fields[elData.dbField] : defaultAvatar;
+            } else {
+                imgSrc = elData.src || (elData.type === 'photo' ? defaultAvatar : defaultLogo);
             }
 
+            div.className += elData.type === 'photo' ? ' el-photo' : ' el-logo';
+            div.style.width = (elData.width || 80) + 'px';
+            div.style.height = (elData.height || 80) + 'px';
 
-            const span =
-                document.createElement(
-                    'span'
-                );
+            let objX = elData.objX !== undefined ? elData.objX : 50;
+            let objY = elData.objY !== undefined ? elData.objY : 50;
+            let zoom = elData.zoom || 1;
 
+            if (elData.type === 'photo') {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'img-wrapper';
 
-            span.innerText =
-                displayText;
-
-
-            span.style.setProperty(
-                'color',
-                elData.color ||
-                    '#000000',
-                'important'
-            );
-
-
-            div.appendChild(
-                span
-            );
-
-        }
-
-
-        /* =====================================================
-           PHOTO / LOGO
-           ===================================================== */
-
-        else if (
-            elData.type ===
-                'photo' ||
-            elData.type ===
-                'logo'
-        ) {
-
-            let imgSrc =
-                elData.src;
-
-
-            if (
-                elData.dataSource ===
-                'database'
-            ) {
-
-                imgSrc =
-                    recordData &&
-                    recordData.fields &&
-                    recordData.fields[
-                        elData.dbField
-                    ]
-                        ? recordData.fields[
-                            elData.dbField
-                        ]
-                        : defaultAvatar;
-
-            }
-
-            else {
-
-                imgSrc =
-                    elData.src ||
-                    (
-                        elData.type ===
-                        'photo'
-                            ? defaultAvatar
-                            : defaultLogo
-                    );
-
-            }
-
-
-            div.className +=
-                elData.type ===
-                'photo'
-                    ? ' el-photo'
-                    : ' el-logo';
-
-
-            div.style.width =
-                (elData.width || 80) +
-                'px';
-
-
-            div.style.height =
-                (elData.height || 80) +
-                'px';
-
-
-            let objX =
-                elData.objX !==
-                undefined
-                    ? elData.objX
-                    : 50;
-
-
-            let objY =
-                elData.objY !==
-                undefined
-                    ? elData.objY
-                    : 50;
-
-
-            let zoom =
-                elData.zoom ||
-                1;
-
-
-            if (
-                elData.type ===
-                'photo'
-            ) {
-
-                const wrapper =
-                    document.createElement(
-                        'div'
-                    );
-
-
-                wrapper.className =
-                    'img-wrapper';
-
-
-                const img =
-                    document.createElement(
-                        'img'
-                    );
-
-
+                const img = document.createElement('img');
                 img.src = imgSrc || defaultAvatar;
                 img.onerror = function() {
                     this.onerror = null;
                     this.src = defaultAvatar;
                 };
 
+                img.style.objectPosition = `${objX}% ${objY}%`;
+                img.style.transform = `scale(${zoom})`;
 
-                img.style.objectPosition =
-                    `${objX}% ${objY}%`;
-
-
-                img.style.transform =
-                    `scale(${zoom})`;
-
-
-                wrapper.appendChild(
-                    img
-                );
-
-
-                div.appendChild(
-                    wrapper
-                );
-
-            }
-
-            else {
-
-                const img =
-                    document.createElement(
-                        'img'
-                    );
-
-
+                wrapper.appendChild(img);
+                div.appendChild(wrapper);
+            } else {
+                const img = document.createElement('img');
                 img.src = imgSrc || defaultLogo;
                 img.onerror = function() {
                     this.onerror = null;
                     this.src = defaultLogo;
                 };
-
-
-                img.style.width =
-                    '100%';
-
-
-                img.style.height =
-                    '100%';
-
-
-                img.style.objectFit =
-                    'contain';
-
-
-                div.appendChild(
-                    img
-                );
-
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'contain';
+                div.appendChild(img);
             }
-
         }
 
+        const handle = document.createElement('div');
+        handle.className = 'resize-handle';
+        div.appendChild(handle);
 
-        /* =====================================================
-           RESIZE HANDLE (INDEPENDENT WIDTH & HEIGHT RESIZING)
-           ===================================================== */
+        handle.addEventListener('pointerdown', function(e) {
+            e.stopPropagation();
+            let startX = e.clientX;
+            let startY = e.clientY;
+            let startW = elData.width || 80;
+            let startH = elData.height || 80;
+            let startFontSize = parseFloat(elData.fontSize) || 14;
 
-        const handle =
-            document.createElement(
-                'div'
-            );
+            function doResize(ev) {
+                let dx = (ev.clientX - startX) / scaleFactor;
+                let dy = (ev.clientY - startY) / scaleFactor;
 
-
-        handle.className =
-            'resize-handle';
-
-
-        div.appendChild(
-            handle
-        );
-
-
-        handle.addEventListener(
-            'pointerdown',
-            function(e) {
-
-                e.stopPropagation();
-
-
-                let startX =
-                    e.clientX;
-
-
-                let startY =
-                    e.clientY;
-
-
-                let startW =
-                    elData.width || 80;
-
-
-                let startH =
-                    elData.height || 80;
-
-
-                let startFontSize =
-                    parseFloat(
-                        elData.fontSize
-                    ) ||
-                    14;
-
-
-                function doResize(ev) {
-
-                    let dx =
-                        (
-                            ev.clientX -
-                            startX
-                        ) /
-                        scaleFactor;
-
-
-                    let dy =
-                        (
-                            ev.clientY -
-                            startY
-                        ) /
-                        scaleFactor;
-
-
-                    if (
-                        elData.type ===
-                        'text'
-                    ) {
-
-                        elData.width = Math.max(20, startW + dx);
-                        elData.height = Math.max(15, startH + dy);
-
-                        div.style.width = elData.width + 'px';
-                        div.style.height = elData.height + 'px';
-
-                    }
-                    else {
-                        elData.width = Math.max(15, startW + dx);
-                        elData.height = Math.max(10, startH + dy);
-
-                        div.style.width = elData.width + 'px';
-                        div.style.height = elData.height + 'px';
-                    }
-
+                if (elData.type === 'text') {
+                    elData.width = Math.max(20, startW + dx);
+                    elData.height = Math.max(15, startH + dy);
+                    div.style.width = elData.width + 'px';
+                    div.style.height = elData.height + 'px';
+                } else {
+                    elData.width = Math.max(15, startW + dx);
+                    elData.height = Math.max(10, startH + dy);
+                    div.style.width = elData.width + 'px';
+                    div.style.height = elData.height + 'px';
                 }
-
-
-                function stopResize() {
-
-                    window.removeEventListener(
-                        'pointermove',
-                        doResize
-                    );
-
-
-                    window.removeEventListener(
-                        'pointerup',
-                        stopResize
-                    );
-
-
-                    saveState();
-
-
-                    if (
-                        isTemplateCanvas
-                    )
-                        renderElementEditor();
-
-                }
-
-
-                window.addEventListener(
-                    'pointermove',
-                    doResize
-                );
-
-
-                window.addEventListener(
-                    'pointerup',
-                    stopResize
-                );
-
             }
-        );
 
-
-        makeDraggable(
-            div,
-            elData,
-            scaleFactor,
-            isTemplateCanvas
-        );
-
-
-        div.addEventListener(
-            'pointerdown',
-            function(e) {
-
-                e.stopPropagation();
-
-
-                selectedElementId =
-                    elData.uniqueId ||
-                    elData.id;
-
-
-                highlightSelectedElement();
-
-
-                if (
-                    isTemplateCanvas
-                ) {
-
-                    renderElementEditor();
-
-                }
-
-                else {
-
-                    if (
-                        elData.type ===
-                        'photo'
-                    ) {
-
-                        document.getElementById(
-                            'printPhotoTools'
-                        ).style.display =
-                            'flex';
-
-
-                        document.getElementById(
-                            'printPhotoZoom'
-                        ).value =
-                            elData.zoom ||
-                            1;
-
-                    }
-
-                    else {
-
-                        document.getElementById(
-                            'printPhotoTools'
-                        ).style.display =
-                            'none';
-
-                    }
-
-                }
-
+            function stopResize() {
+                window.removeEventListener('pointermove', doResize);
+                window.removeEventListener('pointerup', stopResize);
+                saveState();
+                if (isTemplateCanvas) renderElementEditor();
             }
-        );
 
+            window.addEventListener('pointermove', doResize);
+            window.addEventListener('pointerup', stopResize);
+        });
+
+        makeDraggable(div, elData, scaleFactor, isTemplateCanvas);
+
+        div.addEventListener('pointerdown', function(e) {
+            e.stopPropagation();
+            selectedElementId = elData.uniqueId || elData.id;
+            highlightSelectedElement();
+
+            if (isTemplateCanvas) {
+                renderElementEditor();
+            } else {
+                if (elData.type === 'photo') {
+                    document.getElementById('printPhotoTools').style.display = 'flex';
+                    document.getElementById('printPhotoZoom').value = elData.zoom || 1;
+                } else {
+                    document.getElementById('printPhotoTools').style.display = 'none';
+                }
+            }
+        });
 
         return div;
-
     }
 
-
-    /* =========================================================
-       PHOTO ZOOM
-       ========================================================= */
-
-    function updatePrintPhotoZoom(
-        val
-    ) {
-
-        if (!selectedElementId)
-            return;
-
-
-        const el =
-            generatedElements.find(
-                i =>
-                    i.uniqueId ===
-                    selectedElementId
-            );
-
-
-        if (
-            el &&
-            el.type ===
-            'photo'
-        ) {
-
-            el.zoom =
-                parseFloat(
-                    val
-                );
-
-
-            const domEl =
-                document.querySelector(
-                    `.card-element[data-id="${selectedElementId}"]`
-                );
-
-
+    function updatePrintPhotoZoom(val) {
+        if (!selectedElementId) return;
+        const el = generatedElements.find(i => i.uniqueId === selectedElementId);
+        if (el && el.type === 'photo') {
+            el.zoom = parseFloat(val);
+            const domEl = document.querySelector(`.card-element[data-id="${selectedElementId}"]`);
             if (domEl) {
-
-                const img =
-                    domEl.querySelector(
-                        'img'
-                    );
-
-
-                if (img)
-                    img.style.transform =
-                        `scale(${val})`;
-
+                const img = domEl.querySelector('img');
+                if (img) img.style.transform = `scale(${val})`;
             }
-
         }
-
     }
-
-
-    /* =========================================================
-       HIGHLIGHT
-       ========================================================= */
 
     function highlightSelectedElement() {
-
-        document
-            .querySelectorAll(
-                '.card-element'
-            )
-            .forEach(
-                el => {
-
-                    if (
-                        el.dataset.id ===
-                        selectedElementId
-                    )
-                        el.classList.add(
-                            'selected'
-                        );
-
-                    else
-                        el.classList.remove(
-                            'selected'
-                        );
-
-                }
-            );
-
+        document.querySelectorAll('.card-element').forEach(el => {
+            if (el.dataset.id === selectedElementId) el.classList.add('selected');
+            else el.classList.remove('selected');
+        });
     }
 
-
-    /* =========================================================
-       ELEMENT EDITOR
-       ========================================================= */
-
     function renderElementEditor() {
-
-        const active =
-            getActiveProject();
-
-
-        const panel =
-            document.getElementById(
-                'elementEditorPanel'
-            );
-
-
-        const el =
-            active.elements.find(
-                item =>
-                    item.id ===
-                    selectedElementId
-            );
-
+        const active = getActiveProject();
+        const panel = document.getElementById('elementEditorPanel');
+        const el = active.elements.find(item => item.id === selectedElementId);
 
         if (!el) {
-
-            panel.innerHTML =
-                `<p style="color:#94a3b8; font-size:0.85rem; margin:0;">
-                    Click any item on the card preview to edit its data source,
-                    color, or delete it.
-                </p>`;
-
-
+            panel.innerHTML = `<p style="color:#94a3b8; font-size:0.85rem; margin:0;">Click any item on the card preview to edit its data source, color, or delete it.</p>`;
             return;
-
         }
 
-
         let html = `
-
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-
                 <p style="font-size:0.85rem; font-weight:bold; margin:0;">
                     Editing: ${el.type.toUpperCase()}
                 </p>
-
                 ${
-                    active.format ===
-                    'dual'
+                    active.format === 'dual'
                         ? `
-                            <select
-                                onchange="updateSelectedElementProp('side', this.value)"
-                                style="width:auto; padding:0.2rem; font-size:0.8rem; cursor:pointer;">
-
-                                <option value="front"
-                                    ${el.side === 'front' ? 'selected' : ''}>
-                                    Move to Front
-                                </option>
-
-                                <option value="back"
-                                    ${el.side === 'back' ? 'selected' : ''}>
-                                    Move to Back
-                                </option>
-
+                            <select onchange="updateSelectedElementProp('side', this.value)" style="width:auto; padding:0.2rem; font-size:0.8rem; cursor:pointer;">
+                                <option value="front" ${el.side === 'front' ? 'selected' : ''}>Move to Front</option>
+                                <option value="back" ${el.side === 'back' ? 'selected' : ''}>Move to Back</option>
                             </select>
                         `
                         : ''
                 }
-
             </div>
         `;
 
-
-        if (
-            el.type !==
-            'shape'
-        ) {
-
+        if (el.type !== 'shape') {
             html += `
-
-                <div class="form-group"
-                     style="background:#e2e8f0; padding:0.5rem; border-radius:4px;">
-
-                    <label style="color:#334155; font-weight:bold;">
-                        Data Source Mapping
-                    </label>
-
-                    <select
-                        onchange="updateSelectedElementProp('dataSource', this.value)">
-
-                        <option value="static"
-                            ${el.dataSource === 'static' ? 'selected' : ''}>
-                            Static (Same on all cards)
-                        </option>
-
-                        <option value="database"
-                            ${el.dataSource === 'database' ? 'selected' : ''}>
-                            Database (Different per person)
-                        </option>
-
+                <div class="form-group" style="background:#e2e8f0; padding:0.5rem; border-radius:4px;">
+                    <label style="color:#334155; font-weight:bold;">Data Source Mapping</label>
+                    <select onchange="updateSelectedElementProp('dataSource', this.value)">
+                        <option value="static" ${el.dataSource === 'static' ? 'selected' : ''}>Static (Same on all cards)</option>
+                        <option value="database" ${el.dataSource === 'database' ? 'selected' : ''}>Database (Different per person)</option>
                     </select>
-
                 </div>
-
             `;
-
         }
 
-
-        if (
-            el.type ===
-            'text'
-        ) {
-
-            if (
-                el.dataSource ===
-                'database'
-            ) {
-
+        if (el.type === 'text') {
+            if (el.dataSource === 'database') {
                 html += `
-
                     <div class="form-group">
-
-                        <label style="color:#059669; font-weight:bold;">
-                            Database Column Name
-                        </label>
-
-                        <input
-                            type="text"
-                            value="${encodeHTML(el.dbField || '')}"
-                            placeholder="e.g. Employee ID"
-                            oninput="updateTextContentDirectly('dbField', this.value)">
-
+                        <label style="color:#059669; font-weight:bold;">Database Column Name</label>
+                        <input type="text" value="${encodeHTML(el.dbField || '')}" placeholder="e.g. Employee ID" oninput="updateTextContentDirectly('dbField', this.value)">
                     </div>
-
                     <div class="form-group">
-
-                        <label>
-                            Text Mask (Optional)
-                        </label>
-
-                        <input
-                            type="text"
-                            value="${encodeHTML(el.content || '{val}')}"
-                            oninput="updateTextContentDirectly('content', this.value)">
-
+                        <label>Text Mask (Optional)</label>
+                        <input type="text" value="${encodeHTML(el.content || '{val}')}" oninput="updateTextContentDirectly('content', this.value)">
                     </div>
-
                 `;
-
-            }
-
-            else {
-
+            } else {
                 html += `
-
                     <div class="form-group">
-
-                        <label>
-                            Static Text Content
-                        </label>
-
-                        <input
-                            type="text"
-                            value="${encodeHTML(el.content || '')}"
-                            oninput="updateTextContentDirectly('content', this.value)">
-
+                        <label>Static Text Content</label>
+                        <input type="text" value="${encodeHTML(el.content || '')}" oninput="updateTextContentDirectly('content', this.value)">
                     </div>
-
                 `;
-
             }
-
 
             html += `
-
                 <div style="display:flex; gap:1rem;">
-
                     <div class="form-group" style="flex:1;">
                         <label>Width (px)</label>
                         <input type="number" value="${el.width || 150}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
                     </div>
-
                     <div class="form-group" style="flex:1;">
                         <label>Height (px)</label>
                         <input type="number" value="${el.height || 30}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
                     </div>
-
                 </div>
-
                 <div style="display:flex; gap:1rem;">
-
                     <div class="form-group" style="flex:1;">
-
-                        <label>
-                            Font Size (px)
-                        </label>
-
-                        <input
-                            type="number"
-                            value="${parseFloat(el.fontSize) || 14}"
-                            oninput="updateSelectedElementProp('fontSize', this.value + 'px')">
-
+                        <label>Font Size (px)</label>
+                        <input type="number" value="${parseFloat(el.fontSize) || 14}" oninput="updateSelectedElementProp('fontSize', this.value + 'px')">
                     </div>
-
                     <div class="form-group" style="flex:1;">
-
-                        <label>
-                            Text Color
-                        </label>
-
-                        <input
-                            type="color"
-                            value="${el.color || '#000000'}"
-                            oninput="updateSelectedElementProp('color', this.value)"
-                            onchange="updateSelectedElementProp('color', this.value)">
-
+                        <label>Text Color</label>
+                        <input type="color" value="${el.color || '#000000'}" oninput="updateSelectedElementProp('color', this.value)" onchange="updateSelectedElementProp('color', this.value)">
                     </div>
-
                 </div>
-
                 <div class="form-group">
                     <label>Alignment</label>
                     <select onchange="updateSelectedElementProp('align', this.value)">
@@ -3211,48 +1677,19 @@
                         <option value="right" ${el.align === 'right' ? 'selected' : ''}>Right</option>
                     </select>
                 </div>
-
             `;
-
-        }
-
-        else if (
-            el.type ===
-            'shape'
-        ) {
-
+        } else if (el.type === 'shape') {
             html += `
-
                 <div style="display:flex; gap:1rem;">
-
                     <div class="form-group" style="flex:1;">
-
-                        <label>
-                            Width (px)
-                        </label>
-
-                        <input
-                            type="number"
-                            value="${el.width}"
-                            oninput="updateSelectedElementProp('width', parseInt(this.value))">
-
+                        <label>Width (px)</label>
+                        <input type="number" value="${el.width}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
                     </div>
-
                     <div class="form-group" style="flex:1;">
-
-                        <label>
-                            Height (px)
-                        </label>
-
-                        <input
-                            type="number"
-                            value="${el.height}"
-                            oninput="updateSelectedElementProp('height', parseInt(this.value))">
-
+                        <label>Height (px)</label>
+                        <input type="number" value="${el.height}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
                     </div>
-
                 </div>
-
                 <div class="form-group">
                     <label>Shape Style / Corners</label>
                     <select onchange="updateSelectedElementProp('shapeType', this.value)">
@@ -3262,151 +1699,55 @@
                         <option value="circle" ${el.shapeType === 'circle' ? 'selected' : ''}>Circle / Oval</option>
                     </select>
                 </div>
-
                 <div class="form-group">
-
-                    <label>
-                        Shape Color
-                    </label>
-
-                    <input
-                        type="color"
-                        value="${el.bg || active.themeColor || '#2563eb'}"
-                        oninput="updateSelectedElementProp('bg', this.value)"
-                        onchange="updateSelectedElementProp('bg', this.value)">
-
+                    <label>Shape Color</label>
+                    <input type="color" value="${el.bg || active.themeColor || '#2563eb'}" oninput="updateSelectedElementProp('bg', this.value)" onchange="updateSelectedElementProp('bg', this.value)">
                     ${
                         el.isThemeable
-                            ? `
-                                <p style="font-size:0.75rem; color:#64748b; margin:0.35rem 0 0;">
-                                    This shape is linked to the Global Theme Color.
-                                    Selecting a custom color will unlink it.
-                                </p>
-                              `
-                            : `
-                                <p style="font-size:0.75rem; color:#64748b; margin:0.35rem 0 0;">
-                                    This shape currently uses a custom color.
-                                </p>
-                              `
+                            ? `<p style="font-size:0.75rem; color:#64748b; margin:0.35rem 0 0;">Linked to Global Theme Color. Custom color will unlink.</p>`
+                            : `<p style="font-size:0.75rem; color:#64748b; margin:0.35rem 0 0;">Custom color active.</p>`
                     }
-
                 </div>
-
                 ${
                     !el.isThemeable
-                        ? `
-                            <button
-                                type="button"
-                                class="secondary-btn"
-                                style="margin-top:0.25rem;"
-                                onclick="makeElementThemeable('${el.id}')">
-                                Use Global Theme Color
-                            </button>
-                          `
+                        ? `<button type="button" class="secondary-btn" style="margin-top:0.25rem;" onclick="makeElementThemeable('${el.id}')">Use Global Theme Color</button>`
                         : ''
                 }
-
             `;
-
-        }
-
-        else if (
-            el.type ===
-                'photo' ||
-            el.type ===
-                'logo'
-        ) {
-
-            if (
-                el.dataSource ===
-                'database'
-            ) {
-
+        } else if (el.type === 'photo' || el.type === 'logo') {
+            if (el.dataSource === 'database') {
                 html += `
-
                     <div class="form-group">
-
-                        <label style="color:#059669; font-weight:bold;">
-                            Database Column Name
-                        </label>
-
-                        <input
-                            type="text"
-                            value="${encodeHTML(el.dbField || 'Photo')}"
-                            oninput="updateSelectedElementProp('dbField', this.value)">
-
+                        <label style="color:#059669; font-weight:bold;">Database Column Name</label>
+                        <input type="text" value="${encodeHTML(el.dbField || 'Photo')}" oninput="updateSelectedElementProp('dbField', this.value)">
                     </div>
-
                 `;
-
-            }
-
-            else {
-
+            } else {
                 html += `
-
                     <div class="form-group">
-
-                        <label>
-                            Upload Static Image
-                        </label>
-
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onchange="handleStaticElementUpload(event, '${el.id}')">
-
+                        <label>Upload Static Image</label>
+                        <input type="file" accept="image/*" onchange="handleStaticElementUpload(event, '${el.id}')">
                     </div>
-
                 `;
-
             }
-
 
             html += `
-
                 <div style="display:flex; gap:1rem;">
-
                     <div class="form-group" style="flex:1;">
                         <label>Width (px)</label>
                         <input type="number" value="${el.width || 80}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
                     </div>
-
                     <div class="form-group" style="flex:1;">
                         <label>Height (px)</label>
                         <input type="number" value="${el.height || 80}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
                     </div>
-
                 </div>
-
             `;
-
         }
 
-
-        html += `
-
-            <button
-                class="action-btn"
-                style="background:#dc2626; padding:0.3rem 0.6rem; font-size:0.8rem;"
-                onclick="deleteSelectedElement('${el.id}')">
-
-                Delete Element
-
-            </button>
-
-        `;
-
-
-        panel.innerHTML =
-            html;
-
+        html += `<button class="action-btn" style="background:#dc2626; padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteSelectedElement('${el.id}')">Delete Element</button>`;
+        panel.innerHTML = html;
     }
-
-
-    /* =========================================================
-       DIRECT TEXT UPDATER (FIXES TYPING FOCUS LOSS)
-       ========================================================= */
 
     function updateTextContentDirectly(prop, val) {
         const active = getActiveProject();
@@ -3426,1627 +1767,429 @@
         }
     }
 
+    function makeElementThemeable(id) {
+        const active = getActiveProject();
+        const el = active.elements.find(item => item.id === id);
+        if (!el || el.type !== 'shape') return;
 
-    /* =========================================================
-       MAKE ELEMENT THEMEABLE
-       ========================================================= */
-
-    function makeElementThemeable(
-        id
-    ) {
-
-        const active =
-            getActiveProject();
-
-
-        const el =
-            active.elements.find(
-                item =>
-                    item.id === id
-            );
-
-
-        if (!el)
-            return;
-
-
-        if (
-            el.type !==
-            'shape'
-        )
-            return;
-
-
-        el.isThemeable =
-            true;
-
-
-        el.bg =
-            active.themeColor;
-
-
+        el.isThemeable = true;
+        el.bg = active.themeColor;
         saveState();
-
-
-        selectedElementId =
-            id;
-
-
+        selectedElementId = id;
         renderTemplateCanvas();
-
     }
 
+    function updateSelectedElementProp(prop, val) {
+        const active = getActiveProject();
+        const el = active.elements.find(item => item.id === selectedElementId);
+        if (!el) return;
 
-    /* =========================================================
-       UPDATE ELEMENT
-       ========================================================= */
+        el[prop] = val;
+        if (prop === 'bg') el.isThemeable = false;
 
-    function updateSelectedElementProp(
-        prop,
-        val
-    ) {
-
-        const active =
-            getActiveProject();
-
-
-        const el =
-            active.elements.find(
-                item =>
-                    item.id ===
-                    selectedElementId
-            );
-
-
-        if (!el)
-            return;
-
-
-        el[prop] =
-            val;
-
-
-        if (
-            prop ===
-            'bg'
-        ) {
-
-            el.isThemeable =
-                false;
-
-        }
-
-
-        if (
-            prop ===
-            'dataSource'
-        ) {
-
-            if (
-                val ===
-                'database' &&
-                !el.dbField
-            ) {
-
-                el.dbField =
-                    el.type ===
-                    'text'
-                        ? 'New Field'
-                        : 'Photo';
-
+        if (prop === 'dataSource') {
+            if (val === 'database' && !el.dbField) {
+                el.dbField = el.type === 'text' ? 'New Field' : 'Photo';
             }
-
-
-            if (
-                val ===
-                'database' &&
-                el.type ===
-                'text' &&
-                !String(
-                    el.content ||
-                    ''
-                ).includes(
-                    '{val}'
-                )
-            ) {
-
-                el.content =
-                    '{val}';
-
+            if (val === 'database' && el.type === 'text' && !String(el.content || '').includes('{val}')) {
+                el.content = '{val}';
             }
-
         }
-
 
         saveState();
-
-
-        renderTemplateCanvas(
-            false
-        );
-
-
+        renderTemplateCanvas(false);
         renderElementEditor();
-
     }
 
-
-    /* =========================================================
-       DELETE ELEMENT
-       ========================================================= */
-
-    function deleteSelectedElement(
-        id
-    ) {
-
-        const active =
-            getActiveProject();
-
-
-        active.elements =
-            active.elements.filter(
-                item =>
-                    item.id !==
-                    id
-            );
-
-
-        selectedElementId =
-            null;
-
-
+    function deleteSelectedElement(id) {
+        const active = getActiveProject();
+        active.elements = active.elements.filter(item => item.id !== id);
+        selectedElementId = null;
         saveState();
-
         renderTemplateCanvas();
-
     }
 
+    function makeDraggable(element, elData, scaleFactor, isTemplateCanvas) {
+        let startX = 0, startY = 0;
 
-    /* =========================================================
-       DRAG
-       ========================================================= */
-
-    function makeDraggable(
-        element,
-        elData,
-        scaleFactor,
-        isTemplateCanvas
-    ) {
-
-        let startX =
-            0;
-
-        let startY =
-            0;
-
-
-        element.addEventListener(
-            'pointerdown',
-            pointerDown
-        );
-
+        element.addEventListener('pointerdown', pointerDown);
 
         function pointerDown(e) {
+            if (e.target.classList.contains('resize-handle')) return;
+            startX = e.clientX;
+            startY = e.clientY;
 
-            if (
-                e.target.classList.contains(
-                    'resize-handle'
-                )
-            )
-                return;
-
-
-            startX =
-                e.clientX;
-
-
-            startY =
-                e.clientY;
-
-
-            window.addEventListener(
-                'pointermove',
-                pointerMove
-            );
-
-
-            window.addEventListener(
-                'pointerup',
-                pointerUp
-            );
-
+            window.addEventListener('pointermove', pointerMove);
+            window.addEventListener('pointerup', pointerUp);
 
             try {
-
-                element.setPointerCapture(
-                    e.pointerId
-                );
-
-            }
-            catch (_) {}
-
+                element.setPointerCapture(e.pointerId);
+            } catch (_) {}
 
             e.stopPropagation();
-
         }
-
 
         function pointerMove(e) {
+            let dx = (e.clientX - startX) / scaleFactor;
+            let dy = (e.clientY - startY) / scaleFactor;
+            startX = e.clientX;
+            startY = e.clientY;
 
-            let dx =
-                (
-                    e.clientX -
-                    startX
-                ) /
-                scaleFactor;
+            if (!isTemplateCanvas && elData.type === 'photo') {
+                elData.objX = elData.objX !== undefined ? elData.objX : 50;
+                elData.objY = elData.objY !== undefined ? elData.objY : 50;
 
+                elData.objX -= (dx / elData.width) * 100;
+                elData.objY -= (dy / elData.height) * 100;
 
-            let dy =
-                (
-                    e.clientY -
-                    startY
-                ) /
-                scaleFactor;
+                elData.objX = Math.max(-50, Math.min(150, elData.objX));
+                elData.objY = Math.max(-50, Math.min(150, elData.objY));
 
-
-            startX =
-                e.clientX;
-
-
-            startY =
-                e.clientY;
-
-
-            if (
-                !isTemplateCanvas &&
-                elData.type ===
-                'photo'
-            ) {
-
-                elData.objX =
-                    elData.objX !==
-                    undefined
-                        ? elData.objX
-                        : 50;
-
-
-                elData.objY =
-                    elData.objY !==
-                    undefined
-                        ? elData.objY
-                        : 50;
-
-
-                elData.objX -=
-                    (
-                        dx /
-                        elData.width
-                    ) *
-                    100;
-
-
-                elData.objY -=
-                    (
-                        dy /
-                        elData.height
-                    ) *
-                    100;
-
-
-                elData.objX =
-                    Math.max(
-                        -50,
-                        Math.min(
-                            150,
-                            elData.objX
-                        )
-                    );
-
-
-                elData.objY =
-                    Math.max(
-                        -50,
-                        Math.min(
-                            150,
-                            elData.objY
-                        )
-                    );
-
-
-                const img =
-                    element.querySelector(
-                        'img'
-                    );
-
-
+                const img = element.querySelector('img');
                 if (img) {
-
-                    img.style.objectPosition =
-                        `${elData.objX}% ${elData.objY}%`;
-
+                    img.style.objectPosition = `${elData.objX}% ${elData.objY}%`;
                 }
-
+            } else {
+                elData.x += dx;
+                elData.y += dy;
+                element.style.left = elData.x + 'px';
+                element.style.top = elData.y + 'px';
             }
-
-            else {
-
-                elData.x +=
-                    dx;
-
-                elData.y +=
-                    dy;
-
-
-                element.style.left =
-                    elData.x +
-                    'px';
-
-
-                element.style.top =
-                    elData.y +
-                    'px';
-
-            }
-
         }
-
 
         function pointerUp() {
-
-            window.removeEventListener(
-                'pointermove',
-                pointerMove
-            );
-
-
-            window.removeEventListener(
-                'pointerup',
-                pointerUp
-            );
-
-
+            window.removeEventListener('pointermove', pointerMove);
+            window.removeEventListener('pointerup', pointerUp);
             saveState();
-
         }
-
     }
-
-
-    /* =========================================================
-       DATABASE FIELDS
-       ========================================================= */
 
     function getDatabaseFields() {
+        const active = getActiveProject();
+        const fields = [];
 
-        const active =
-            getActiveProject();
-
-
-        const fields =
-            [];
-
-
-        active.elements.forEach(
-            el => {
-
-                if (
-                    el.dataSource ===
-                    'database' &&
-                    el.dbField
-                ) {
-
-                    if (
-                        !fields.find(
-                            f =>
-                                f.name ===
-                                el.dbField
-                        )
-                    ) {
-
-                        fields.push({
-
-                            name:
-                                el.dbField,
-
-                            type:
-                                (
-                                    el.type ===
-                                    'photo' ||
-                                    el.type ===
-                                    'logo'
-                                )
-                                    ? 'image'
-                                    : 'text'
-
-                        });
-
-                    }
-
+        active.elements.forEach(el => {
+            if (el.dataSource === 'database' && el.dbField) {
+                if (!fields.find(f => f.name === el.dbField)) {
+                    fields.push({
+                        name: el.dbField,
+                        type: (el.type === 'photo' || el.type === 'logo') ? 'image' : 'text'
+                    });
                 }
-
             }
-        );
-
-
+        });
         return fields;
-
     }
-
-
-    /* =========================================================
-       DATABASE FORM
-       ========================================================= */
 
     function renderDatabaseForm() {
+        const fields = getActiveProject().elements.filter(el => el.dataSource === 'database' && el.dbField);
+        const formContainer = document.getElementById('dynamicDbForm');
+        const headContainer = document.getElementById('dynamicDbHead');
 
-        const fields =
-            getActiveProject().elements.filter(el => el.dataSource === 'database' && el.dbField);
-
-        const formContainer =
-            document.getElementById(
-                'dynamicDbForm'
-            );
-
-
-        const headContainer =
-            document.getElementById(
-                'dynamicDbHead'
-            );
-
-
-        if (
-            fields.length ===
-            0
-        ) {
-
-            formContainer.innerHTML =
-                `<p style="color:#dc2626; font-weight:bold;">
-                    No Database fields found in the Design tab.
-                </p>`;
-
-
-            headContainer.innerHTML =
-                '';
-
-
-            return;
-
-        }
-
-
-        let html =
-            '<div class="layout-split" style="gap:1rem; align-items:flex-end;">';
-
-
-        getDatabaseFields().forEach(
-            field => {
-
-                const safeId =
-                    field.name.replace(
-                        /[^a-zA-Z0-9]/g,
-                        ''
-                    );
-
-
-                html +=
-                    `<div class="form-group" style="flex:1; min-width:200px;">
-
-                        <label>
-                            ${encodeHTML(field.name)}
-                        </label>`;
-
-
-                if (
-                    field.type ===
-                    'image'
-                ) {
-
-                    html +=
-                        `<input
-                            type="file"
-                            id="db_in_${safeId}"
-                            accept="image/*"
-                            onchange="handleDynamicImageUpload(event, '${encodeHTML(field.name)}')">`;
-
-                }
-
-                else {
-
-                    html +=
-                        `<input
-                            type="text"
-                            id="db_in_${safeId}"
-                            placeholder="Enter ${encodeHTML(field.name)}">`;
-
-                }
-
-
-                html +=
-                    `</div>`;
-
-            }
-        );
-
-
-        html +=
-            '</div>';
-
-
-        formContainer.innerHTML =
-            html;
-
-
-        let thHtml =
-            '<tr>' +
-            '<th style="width:40px; text-align:center;">Print</th>';
-
-
-        getDatabaseFields().forEach(
-            f => {
-
-                thHtml +=
-                    `<th>
-                        ${encodeHTML(f.name)}
-                    </th>`;
-
-            }
-        );
-
-
-        thHtml +=
-            '<th>Action</th></tr>';
-
-
-        headContainer.innerHTML =
-            thHtml;
-
-    }
-
-
-    /* =========================================================
-       DATABASE IMAGE UPLOAD CACHE
-       ========================================================= */
-
-    function handleDynamicImageUpload(
-        event,
-        fieldName
-    ) {
-
-        const file =
-            event.target.files[0];
-
-
-        if (!file) {
+        if (fields.length === 0) {
+            formContainer.innerHTML = `<p style="color:#dc2626; font-weight:bold;">No Database fields found in the Design tab.</p>`;
+            headContainer.innerHTML = '';
             return;
         }
 
+        let html = '<div class="layout-split" style="gap:1rem; align-items:flex-end;">';
+        getDatabaseFields().forEach(field => {
+            const safeId = field.name.replace(/[^a-zA-Z0-9]/g, '');
+            html += `<div class="form-group" style="flex:1; min-width:200px;"><label>${encodeHTML(field.name)}</label>`;
 
-        const reader =
-            new FileReader();
+            if (field.type === 'image') {
+                html += `<input type="file" id="db_in_${safeId}" accept="image/*" onchange="handleDynamicImageUpload(event, '${encodeHTML(field.name)}')">`;
+            } else {
+                html += `<input type="text" id="db_in_${safeId}" placeholder="Enter ${encodeHTML(field.name)}">`;
+            }
+            html += `</div>`;
+        });
+        html += '</div>';
+        formContainer.innerHTML = html;
 
-
-        reader.onload =
-            function(e) {
-
-                dynamicUploadCache[
-                    fieldName
-                ] =
-                    e.target.result;
-
-            };
-
-
-        reader.readAsDataURL(
-            file
-        );
-
+        let thHtml = '<tr><th style="width:40px; text-align:center;">Print</th>';
+        getDatabaseFields().forEach(f => {
+            thHtml += `<th>${encodeHTML(f.name)}</th>`;
+        });
+        thHtml += '<th>Action</th></tr>';
+        headContainer.innerHTML = thHtml;
     }
 
+    function handleDynamicImageUpload(event, fieldName) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    /* =========================================================
-       SAVE RECORD (FIXED ASYNC FILE READER & PRESERVATION)
-       ========================================================= */
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            dynamicUploadCache[fieldName] = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
 
     async function saveRecord() {
+        const active = getActiveProject();
+        const fields = getDatabaseFields();
 
-        const active =
-            getActiveProject();
-
-
-        const fields =
-            getDatabaseFields();
-
-
-        if (
-            fields.length ===
-            0
-        ) {
-
-            alert(
-                "No database fields to add."
-            );
-
-
+        if (fields.length === 0) {
+            alert("No database fields to add.");
             return;
-
         }
 
+        if (!Array.isArray(active.db)) active.db = [];
 
-        if (
-            !Array.isArray(
-                active.db
-            )
-        )
-            active.db =
-                [];
-
-
-        let recordData =
-            {};
-
-
+        let recordData = {};
         let existingRecord = null;
         if (editingRecordId !== null) {
             existingRecord = active.db.find(r => String(r.id) === String(editingRecordId));
         }
 
-
         for (const field of fields) {
+            const safeId = field.name.replace(/[^a-zA-Z0-9]/g, '');
 
-            const safeId =
-                field.name.replace(
-                    /[^a-zA-Z0-9]/g,
-                    ''
-                );
+            if (field.type === 'image') {
+                const fileInput = document.getElementById(`db_in_${safeId}`);
+                let existingImage = defaultAvatar;
 
-
-            if (
-                field.type ===
-                'image'
-            ) {
-
-                const fileInput =
-                    document.getElementById(
-                        `db_in_${safeId}`
-                    );
-
-
-                let existingImage =
-                    defaultAvatar;
-
-
-                if (
-                    existingRecord &&
-                    existingRecord.fields &&
-                    existingRecord.fields[field.name]
-                ) {
-
-                    existingImage =
-                        existingRecord.fields[
-                            field.name
-                        ];
-
+                if (existingRecord && existingRecord.fields && existingRecord.fields[field.name]) {
+                    existingImage = existingRecord.fields[field.name];
                 }
-
 
                 let newUploadedImage = null;
-
-
-                if (
-                    fileInput &&
-                    fileInput.files &&
-                    fileInput.files[0]
-                ) {
-
+                if (fileInput && fileInput.files && fileInput.files[0]) {
                     try {
-
-                        newUploadedImage =
-                            await readFileAsDataURL(
-                                fileInput.files[0]
-                            );
-
-                    }
-                    catch (err) {
-
+                        newUploadedImage = await readFileAsDataURL(fileInput.files[0]);
+                    } catch (err) {
                         newUploadedImage = null;
-
                     }
-
                 }
 
-
-                recordData[
-                    field.name
-                ] =
-                    newUploadedImage ||
-                    dynamicUploadCache[field.name] ||
-                    existingImage;
-
-
-                dynamicUploadCache[
-                    field.name
-                ] =
-                    null;
-
+                recordData[field.name] = newUploadedImage || dynamicUploadCache[field.name] || existingImage;
+                dynamicUploadCache[field.name] = null;
+            } else {
+                const el = document.getElementById(`db_in_${safeId}`);
+                recordData[field.name] = el ? el.value : '';
             }
-
-            else {
-
-                const el =
-                    document.getElementById(
-                        `db_in_${safeId}`
-                    );
-
-
-                recordData[
-                    field.name
-                ] =
-                    el
-                        ? el.value
-                        : '';
-
-            }
-
         }
 
-
-        if (
-            existingRecord
-        ) {
-
-            existingRecord.fields =
-                recordData;
-
-            existingRecord.selectedToPrint =
-                existingRecord.selectedToPrint !== false;
-
-
+        if (existingRecord) {
+            existingRecord.fields = recordData;
+            existingRecord.selectedToPrint = existingRecord.selectedToPrint !== false;
             resetDatabaseForm();
-
-        }
-
-        else {
-
+        } else {
             active.db.push({
-
-                id:
-                    Date.now(),
-
-                selectedToPrint:
-                    true,
-
-                fields:
-                    recordData
-
+                id: Date.now(),
+                selectedToPrint: true,
+                fields: recordData
             });
-
         }
-
 
         try {
             saveState();
-        }
-        catch (error) {
+        } catch (error) {
             alert('Storage limit reached. Try using smaller images.');
             return;
         }
 
         clearFormInputs();
-
         renderTable();
-
-
-        document.getElementById(
-            'dbCountBadge'
-        ).innerText =
-            active.db.length;
-
+        document.getElementById('dbCountBadge').innerText = active.db.length;
     }
-
 
     function readFileAsDataURL(file) {
-
-        return new Promise(
-            (resolve, reject) => {
-
-                const reader =
-                    new FileReader();
-
-                reader.onload =
-                    e =>
-                        resolve(
-                            e.target.result
-                        );
-
-                reader.onerror =
-                    err =>
-                        reject(err);
-
-                reader.readAsDataURL(
-                    file
-                );
-
-            }
-        );
-
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => resolve(e.target.result);
+            reader.onerror = err => reject(err);
+            reader.readAsDataURL(file);
+        });
     }
 
+    function editRecord(id) {
+        const active = getActiveProject();
+        const record = active.db.find(r => r.id === id);
+        if (!record) return;
 
-    /* =========================================================
-       EDIT RECORD
-       ========================================================= */
+        editingRecordId = id;
+        const fields = getDatabaseFields();
 
-    function editRecord(
-        id
-    ) {
-
-        const active =
-            getActiveProject();
-
-
-        const record =
-            active.db.find(
-                r =>
-                    r.id ===
-                    id
-            );
-
-
-        if (!record)
-            return;
-
-
-        editingRecordId =
-            id;
-
-
-        const fields =
-            getDatabaseFields();
-
-
-        fields.forEach(
-            field => {
-
-                const safeId =
-                    field.name.replace(
-                        /[^a-zA-Z0-9]/g,
-                        ''
-                    );
-
-
-                const el =
-                    document.getElementById(
-                        `db_in_${safeId}`
-                    );
-
-
-                if (
-                    el &&
-                    field.type !==
-                    'image'
-                ) {
-
-                    el.value =
-                        record.fields[
-                            field.name
-                        ] ||
-                        '';
-
-                }
-
+        fields.forEach(field => {
+            const safeId = field.name.replace(/[^a-zA-Z0-9]/g, '');
+            const el = document.getElementById(`db_in_${safeId}`);
+            if (el && field.type !== 'image') {
+                el.value = record.fields[field.name] || '';
             }
-        );
-
-
-        document.getElementById(
-            'dbSubmitBtn'
-        ).innerText =
-            "Update Record";
-
-
-        document.getElementById(
-            'dbCancelBtn'
-        ).style.display =
-            "inline-block";
-
-
-        document.getElementById(
-            'dbHeaderNote'
-        ).innerText =
-            `Editing record ID: ${id}`;
-
-
-        window.scrollTo({
-
-            top:
-                0,
-
-            behavior:
-                'smooth'
-
         });
 
+        document.getElementById('dbSubmitBtn').innerText = "Update Record";
+        document.getElementById('dbCancelBtn').style.display = "inline-block";
+        document.getElementById('dbHeaderNote').innerText = `Editing record ID: ${id}`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-
-    /* =========================================================
-       PRINT SELECTION
-       ========================================================= */
-
-    function togglePrintSelection(
-        id,
-        checkbox
-    ) {
-
-        const active =
-            getActiveProject();
-
-
-        const record =
-            active.db.find(
-                r =>
-                    r.id ===
-                    id
-            );
-
-
+    function togglePrintSelection(id, checkbox) {
+        const active = getActiveProject();
+        const record = active.db.find(r => r.id === id);
         if (record) {
-
-            record.selectedToPrint =
-                checkbox.checked;
-
-
+            record.selectedToPrint = checkbox.checked;
             saveState();
-
         }
-
     }
-
-
-    /* =========================================================
-       RESET DATABASE FORM
-       ========================================================= */
 
     function resetDatabaseForm() {
-
-        editingRecordId =
-            null;
-
-
+        editingRecordId = null;
         clearFormInputs();
-
-
-        document.getElementById(
-            'dbSubmitBtn'
-        ).innerText =
-            "Add to Database";
-
-
-        document.getElementById(
-            'dbCancelBtn'
-        ).style.display =
-            "none";
-
-
-        document.getElementById(
-            'dbHeaderNote'
-        ).innerText =
-            "Add or edit records for your employee batch. Check the boxes for who you want to print.";
-
+        document.getElementById('dbSubmitBtn').innerText = "Add to Database";
+        document.getElementById('dbCancelBtn').style.display = "none";
+        document.getElementById('dbHeaderNote').innerText = "Add or edit records for your employee batch. Check the boxes for who you want to print.";
     }
-
-
-    /* =========================================================
-       CLEAR FORM
-       ========================================================= */
 
     function clearFormInputs() {
-
-        const fields =
-            getDatabaseFields();
-
-
-        fields.forEach(
-            field => {
-
-                const safeId =
-                    field.name.replace(
-                        /[^a-zA-Z0-9]/g,
-                        ''
-                    );
-
-
-                const el =
-                    document.getElementById(
-                        `db_in_${safeId}`
-                    );
-
-
-                if (el)
-                    el.value =
-                        '';
-
-            }
-        );
-
-
-        dynamicUploadCache =
-            {};
-
+        const fields = getDatabaseFields();
+        fields.forEach(field => {
+            const safeId = field.name.replace(/[^a-zA-Z0-9]/g, '');
+            const el = document.getElementById(`db_in_${safeId}`);
+            if (el) el.value = '';
+        });
+        dynamicUploadCache = {};
     }
 
-
-    /* =========================================================
-       DELETE RECORD
-       ========================================================= */
-
-    function deleteRecord(
-        id
-    ) {
-
-        const active =
-            getActiveProject();
-
-
-        if (
-            editingRecordId ===
-            id
-        )
-            resetDatabaseForm();
-
-
-        active.db =
-            active.db.filter(
-                record =>
-                    record.id !==
-                    id
-            );
-
-
+    function deleteRecord(id) {
+        const active = getActiveProject();
+        if (editingRecordId === id) resetDatabaseForm();
+        active.db = active.db.filter(record => record.id !== id);
         saveState();
-
         renderTable();
-
-
-        document.getElementById(
-            'dbCountBadge'
-        ).innerText =
-            active.db.length;
-
+        document.getElementById('dbCountBadge').innerText = active.db.length;
     }
-
-
-    /* =========================================================
-       DATABASE TABLE
-       ========================================================= */
 
     function renderTable() {
+        const active = getActiveProject();
+        const tbody = document.getElementById('dbTableBody');
+        const fields = getDatabaseFields();
+        tbody.innerHTML = '';
 
-        const active =
-            getActiveProject();
-
-
-        const tbody =
-            document.getElementById(
-                'dbTableBody'
-            );
-
-
-        const fields =
-            getDatabaseFields();
-
-
-        tbody.innerHTML =
-            '';
-
-
-        if (
-            !active.db ||
-            active.db.length ===
-            0 ||
-            fields.length ===
-            0
-        ) {
-
-            tbody.innerHTML =
-                `<tr>
-
-                    <td
-                        colspan="${fields.length + 2}"
-                        style="text-align:center; color:#6b7280;">
-
-                        No records found.
-
-                    </td>
-
-                </tr>`;
-
-
+        if (!active.db || active.db.length === 0 || fields.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${fields.length + 2}" style="text-align:center; color:#6b7280;">No records found.</td></tr>`;
             return;
-
         }
 
+        active.db.forEach(record => {
+            const tr = document.createElement('tr');
+            let tdHtml = `<td style="text-align:center;"><input type="checkbox" ${record.selectedToPrint !== false ? 'checked' : ''} onchange="togglePrintSelection(${record.id}, this)"></td>`;
 
-        active.db.forEach(
-            record => {
+            fields.forEach(field => {
+                const val = record.fields[field.name];
+                if (field.type === 'image') {
+                    tdHtml += `<td><img src="${val || defaultAvatar}" class="db-thumbnail"></td>`;
+                } else {
+                    tdHtml += `<td>${encodeHTML(val || '')}</td>`;
+                }
+            });
 
-                const tr =
-                    document.createElement(
-                        'tr'
-                    );
-
-
-                let tdHtml =
-                    `<td style="text-align:center;">
-
-                        <input
-                            type="checkbox"
-                            ${
-                                record.selectedToPrint !== false
-                                    ? 'checked'
-                                    : ''
-                            }
-                            onchange="togglePrintSelection(${record.id}, this)">
-
-                    </td>`;
-
-
-                fields.forEach(
-                    field => {
-
-                        const val =
-                            record.fields[
-                                field.name
-                            ];
-
-
-                        if (
-                            field.type ===
-                            'image'
-                        ) {
-
-                            tdHtml +=
-                                `<td>
-
-                                    <img
-                                        src="${val || defaultAvatar}"
-                                        class="db-thumbnail">
-
-                                </td>`;
-
-                        }
-
-                        else {
-
-                            tdHtml +=
-                                `<td>
-                                    ${encodeHTML(val || '')}
-                                </td>`;
-
-                        }
-
-                    }
-                );
-
-
-                tdHtml +=
-                    `<td>
-
-                        <button
-                            onclick="editRecord(${record.id})"
-                            style="color:#2563eb; border:none; background:none; cursor:pointer; margin-right:0.5rem; font-weight:500;">
-
-                            Edit
-
-                        </button>
-
-                        <button
-                            onclick="deleteRecord(${record.id})"
-                            style="color:red; border:none; background:none; cursor:pointer; font-weight:500;">
-
-                            Delete
-
-                        </button>
-
-                    </td>`;
-
-
-                tr.innerHTML =
-                    tdHtml;
-
-
-                tbody.appendChild(
-                    tr
-                );
-
-            }
-        );
-
+            tdHtml += `<td>
+                        <button onclick="editRecord(${record.id})" style="color:#2563eb; border:none; background:none; cursor:pointer; margin-right:0.5rem; font-weight:500;">Edit</button>
+                        <button onclick="deleteRecord(${record.id})" style="color:red; border:none; background:none; cursor:pointer; font-weight:500;">Delete</button>
+                       </td>`;
+            tr.innerHTML = tdHtml;
+            tbody.appendChild(tr);
+        });
     }
-
-
-    /* =========================================================
-       GENERATE CARDS
-       ========================================================= */
 
     function generateCards() {
+        const active = getActiveProject();
+        const grid = document.getElementById('printGrid');
+        grid.innerHTML = '';
+        generatedElements = [];
+        const helperText = document.getElementById('printHelperText');
 
-        const active =
-            getActiveProject();
+        const databaseRecords = Array.isArray(active.db) ? active.db : [];
+        const recordsToPrint = databaseRecords.filter(record => record.selectedToPrint !== false);
 
-
-        const grid =
-            document.getElementById(
-                'printGrid'
-            );
-
-
-        grid.innerHTML =
-            '';
-
-
-        generatedElements =
-            [];
-
-
-        const helperText =
-            document.getElementById(
-                'printHelperText'
-            );
-
-
-        const databaseRecords =
-            Array.isArray(active.db)
-                ? active.db
-                : [];
-
-
-        const recordsToPrint =
-            databaseRecords.filter(
-                record =>
-                    record.selectedToPrint !==
-                    false
-            );
-
-
-        if (
-            recordsToPrint.length ===
-            0
-        ) {
-
-            grid.innerHTML =
-                `<p style="color:#6b7280;">
-                    No records selected for printing.
-                    Check boxes in the Database tab.
-                </p>`;
-
-
-            helperText.innerText =
-                '';
-
-
+        if (recordsToPrint.length === 0) {
+            grid.innerHTML = `<p style="color:#6b7280;">No records selected for printing. Check boxes in the Database tab.</p>`;
+            helperText.innerText = '';
             return;
-
         }
 
-
-        recordsToPrint.forEach(
-            (
-                record,
-                index
-            ) => {
-
-                let cardElements =
-                    JSON.parse(
-                        JSON.stringify(
-                            active.elements
-                        )
-                    );
-
-
-                cardElements.forEach(
-                    el => {
-
-                        el.uniqueId =
-                            el.id +
-                            '_' +
-                            index +
-                            '_' +
-                            Date.now();
-
-
-                        generatedElements.push(
-                            el
-                        );
-
-                    }
-                );
-
-
-                const displayLabel =
-                    record.fields &&
-                    (
-                        record.fields['Full Name'] ||
-                        record.fields['Name']
-                    )
-                        ? (
-                            record.fields['Full Name'] ||
-                            record.fields['Name']
-                        )
-                        : `Person ${index + 1}`;
-
-
-                /* =================================================
-                   FRONT
-                   ================================================= */
-
-                const frontWrapper =
-                    document.createElement(
-                        'div'
-                    );
-
-
-                frontWrapper.className =
-                    'card-container-wrapper';
-
-
-                const frontCard =
-                    document.createElement(
-                        'div'
-                    );
-
-
-                frontCard.className =
-                    'id-card';
-
-
-                frontCard.style.setProperty(
-                    'background-color',
-                    'white',
-                    'important'
-                );
-
-
-                if (
-                    active.bgImage
-                ) {
-
-                    frontCard.style.setProperty(
-                        'background-image',
-                        `url("${active.bgImage}")`,
-                        'important'
-                    );
-
-                }
-
-                else {
-
-                    frontCard.style.setProperty(
-                        'background-image',
-                        'none',
-                        'important'
-                    );
-
-                }
-
-
-                cardElements
-                    .filter(
-                        el =>
-                            el.side ===
-                            'front'
-                    )
-                    .forEach(
-                        el => {
-
-                            frontCard.appendChild(
-                                createDOMElement(
-                                    el,
-                                    record,
-                                    1.5,
-                                    false
-                                )
-                            );
-
-                        }
-                    );
-
-
-                frontWrapper.appendChild(
-                    frontCard
-                );
-
-
-                const fLabel =
-                    document.createElement(
-                        'div'
-                    );
-
-
-                fLabel.className =
-                    'card-label';
-
-
-                fLabel.innerText =
-                    `Card ${index + 1} (Front): ${displayLabel}`;
-
-
-                frontWrapper.appendChild(
-                    fLabel
-                );
-
-
-                grid.appendChild(
-                    frontWrapper
-                );
-
-
-                /* =================================================
-                   BACK
-                   ================================================= */
-
-                if (
-                    active.format ===
-                    'dual'
-                ) {
-
-                    const backWrapper =
-                        document.createElement(
-                            'div'
-                        );
-
-
-                    backWrapper.className =
-                        'card-container-wrapper';
-
-
-                    const backCard =
-                        document.createElement(
-                            'div'
-                        );
-
-
-                    backCard.className =
-                        'id-card';
-
-
-                    backCard.style.setProperty(
-                        'background-color',
-                        'white',
-                        'important'
-                    );
-
-
-                    if (
-                        active.bgImage
-                    ) {
-
-                        backCard.style.setProperty(
-                            'background-image',
-                            `url("${active.bgImage}")`,
-                            'important'
-                        );
-
-                    }
-
-                    else {
-
-                        backCard.style.setProperty(
-                            'background-image',
-                            'none',
-                            'important'
-                        );
-
-                    }
-
-
-                    cardElements
-                        .filter(
-                            el =>
-                                el.side ===
-                                'back'
-                        )
-                        .forEach(
-                            el => {
-
-                                backCard.appendChild(
-                                    createDOMElement(
-                                        el,
-                                        record,
-                                        1.5,
-                                        false
-                                    )
-                                );
-
-                            }
-                        );
-
-
-                    backWrapper.appendChild(
-                        backCard
-                    );
-
-
-                    const bLabel =
-                        document.createElement(
-                            'div'
-                        );
-
-
-                    bLabel.className =
-                        'card-label';
-
-
-                    bLabel.innerText =
-                        `Card ${index + 1} (Back): ${displayLabel}`;
-
-
-                    backWrapper.appendChild(
-                        bLabel
-                    );
-
-
-                    grid.appendChild(
-                        backWrapper
-                    );
-
-                }
-
+        recordsToPrint.forEach((record, index) => {
+            let cardElements = JSON.parse(JSON.stringify(active.elements));
+
+            cardElements.forEach(el => {
+                el.uniqueId = el.id + '_' + index + '_' + Date.now();
+                generatedElements.push(el);
+            });
+
+            const displayLabel = record.fields && (record.fields['Full Name'] || record.fields['Name']) ? (record.fields['Full Name'] || record.fields['Name']) : `Person ${index + 1}`;
+
+            // FRONT
+            const frontWrapper = document.createElement('div');
+            frontWrapper.className = 'card-container-wrapper';
+
+            const frontCard = document.createElement('div');
+            frontCard.className = 'id-card';
+            frontCard.style.setProperty('background-color', 'white', 'important');
+
+            if (active.bgImage) {
+                frontCard.style.setProperty('background-image', `url("${active.bgImage}")`, 'important');
+            } else {
+                frontCard.style.setProperty('background-image', 'none', 'important');
             }
-        );
 
+            cardElements.filter(el => el.side === 'front').forEach(el => {
+                frontCard.appendChild(createDOMElement(el, record, 1.5, false));
+            });
 
-        helperText.innerText =
-            active.format ===
-            'dual'
-                ? `Generated ${recordsToPrint.length * 2} pages (Front and Back).`
-                : `Generated ${recordsToPrint.length} pages.`;
+            frontWrapper.appendChild(frontCard);
+            const fLabel = document.createElement('div');
+            fLabel.className = 'card-label';
+            fLabel.innerText = `Card ${index + 1} (Front): ${displayLabel}`;
+            frontWrapper.appendChild(fLabel);
+            grid.appendChild(frontWrapper);
 
+            // BACK
+            if (active.format === 'dual') {
+                const backWrapper = document.createElement('div');
+                backWrapper.className = 'card-container-wrapper';
+
+                const backCard = document.createElement('div');
+                backCard.className = 'id-card';
+                backCard.style.setProperty('background-color', 'white', 'important');
+
+                if (active.bgImage) {
+                    backCard.style.setProperty('background-image', `url("${active.bgImage}")`, 'important');
+                } else {
+                    backCard.style.setProperty('background-image', 'none', 'important');
+                }
+
+                cardElements.filter(el => el.side === 'back').forEach(el => {
+                    backCard.appendChild(createDOMElement(el, record, 1.5, false));
+                });
+
+                backWrapper.appendChild(backCard);
+                const bLabel = document.createElement('div');
+                bLabel.className = 'card-label';
+                bLabel.innerText = `Card ${index + 1} (Back): ${displayLabel}`;
+                backWrapper.appendChild(bLabel);
+                grid.appendChild(backWrapper);
+            }
+        });
+
+        helperText.innerText = active.format === 'dual' ? `Generated ${recordsToPrint.length * 2} pages (Front and Back).` : `Generated ${recordsToPrint.length} pages.`;
     }
-
-
-    /* =========================================================
-       PRINT (FIXED: PRESERVES PRINT TAB EDITS)
-       ========================================================= */
 
     function printCards() {
-
-        requestAnimationFrame(
-            function() {
-
-                setTimeout(
-                    function() {
-
-                        window.print();
-
-                    },
-                    150
-                );
-
-            }
-        );
-
+        requestAnimationFrame(function() {
+            setTimeout(function() {
+                window.print();
+            }, 150);
+        });
     }
-
 
     /* =========================================================
        INITIALIZE
        ========================================================= */
 
-    const initialProject =
-        getActiveProject();
-
-
-    document.documentElement.style.setProperty(
-        '--primary',
-        initialProject.themeColor
-    );
-
-
-    renderProjectSelector();
-
-
-    renderTemplateCanvas();
+    initEntitySession();
 
 </script>
 
