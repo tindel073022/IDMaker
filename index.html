@@ -9,6 +9,9 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
+    <!-- Dynamic Print Stylesheet Container -->
+    <style id="runtimePrintStyle"></style>
+
     <style>
         :root {
             --primary: #2563eb;
@@ -270,8 +273,16 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        .canvas-wrapper.portrait-canvas {
             min-height: 6.2in;
             min-width: 4in;
+        }
+
+        .canvas-wrapper.landscape-canvas {
+            min-height: 4.5in;
+            min-width: 6.2in;
         }
 
         .canvas-wrapper h4 {
@@ -289,14 +300,10 @@
            ========================================================= */
 
         .id-card {
-            width: 2.125in;
-            height: 3.375in;
-
             background-color: white;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-
             border-radius: 8px;
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
             position: relative;
@@ -371,27 +378,12 @@
             overflow: hidden;
         }
 
-        .el-photo .img-wrapper {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
-            overflow: hidden;
-            background: #e5e7eb;
-            box-sizing: border-box;
-        }
-
         .el-photo img,
         .el-logo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             pointer-events: none;
-        }
-
-        .el-logo {
-            overflow: visible;
         }
 
         /* =========================================================
@@ -407,9 +399,17 @@
 
         .card-container-wrapper {
             text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card-container-wrapper.portrait-wrapper {
             min-height: 5.5in;
             min-width: 3.5in;
-            margin-bottom: 1rem;
+        }
+
+        .card-container-wrapper.landscape-wrapper {
+            min-height: 3.8in;
+            min-width: 5.5in;
         }
 
         .card-container-wrapper .id-card {
@@ -421,56 +421,26 @@
         .card-label {
             font-size: 0.85rem;
             color: #64748b;
-            margin-top: 0.5rem;
+            margin-top: 1.5rem;
             font-weight: 500;
         }
 
         /* =========================================================
-           PRINT STYLES
+           PRINT STYLES (Dynamic print rules injected via runtimePrintStyle)
            ========================================================= */
-
         @media print {
-
-            @page {
-                size: 2.125in 3.375in;
-                margin: 0;
-            }
-
-            html,
             body {
-                width: 2.125in !important;
-                min-width: 2.125in !important;
-
-                height: 3.375in !important;
-                min-height: 3.375in !important;
-
-                margin: 0 !important;
-                padding: 0 !important;
-
                 background: white !important;
-            }
-
-            body {
                 overflow: hidden !important;
             }
-
             .container {
                 display: block !important;
-
-                width: 2.125in !important;
-                min-width: 2.125in !important;
-                max-width: 2.125in !important;
-
-                height: auto !important;
-
-                margin: 0 !important;
-                padding: 0 !important;
-
                 background: transparent !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
-
             .project-bar,
             .tabs,
             #design,
@@ -480,111 +450,40 @@
             #printPhotoTools {
                 display: none !important;
             }
-
             #print {
                 display: block !important;
-
-                width: 2.125in !important;
-                min-width: 2.125in !important;
-
-                height: auto !important;
-
                 margin: 0 !important;
                 padding: 0 !important;
-
                 background: transparent !important;
             }
-
             .print-grid {
                 display: block !important;
-
-                width: 2.125in !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }
-
             .card-container-wrapper {
                 display: block !important;
-
-                width: 2.125in !important;
-                min-width: 2.125in !important;
-
-                height: 3.375in !important;
-                min-height: 3.375in !important;
-
                 margin: 0 !important;
                 padding: 0 !important;
-
                 position: relative !important;
-
                 page-break-after: always !important;
                 break-after: page !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
-
             .card-container-wrapper:last-child {
                 page-break-after: auto !important;
                 break-after: auto !important;
             }
-
-            .card-container-wrapper .id-card,
-            .id-card {
-                display: block !important;
-
-                width: 2.125in !important;
-                min-width: 2.125in !important;
-                max-width: 2.125in !important;
-
-                height: 3.375in !important;
-                min-height: 3.375in !important;
-                max-height: 3.375in !important;
-
-                position: relative !important;
-
-                top: auto !important;
-                left: auto !important;
-
-                margin: 0 !important;
-                padding: 0 !important;
-
-                transform: none !important;
-                transform-origin: top left !important;
-
-                border: none !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-
-                overflow: hidden !important;
-                background-color: white !important;
-
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
             .card-element {
                 position: absolute !important;
                 cursor: default !important;
             }
-
             .card-element.selected {
                 outline: none !important;
             }
-
             .resize-handle {
                 display: none !important;
-            }
-
-            *,
-            *::before,
-            *::after {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
-            img {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
             }
         }
     </style>
@@ -625,6 +524,18 @@
         </div>
 
         <div style="display:flex; gap:0.5rem; flex-wrap: wrap;">
+
+            <button class="secondary-btn"
+                    style="background:#475569; padding:0.3rem 0.8rem; font-size:0.85rem; margin-bottom:0;"
+                    onclick="undoAction()">
+                ↶ Undo
+            </button>
+
+            <button class="secondary-btn"
+                    style="background:#475569; padding:0.3rem 0.8rem; font-size:0.85rem; margin-bottom:0;"
+                    onclick="redoAction()">
+                ↷ Redo
+            </button>
 
             <button class="action-btn"
                     style="background:#059669; padding:0.3rem 0.8rem; font-size:0.85rem;"
@@ -708,6 +619,25 @@
 
                         <option value="dual">
                             Dual-Sided (Front & Back)
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Card Orientation</label>
+
+                    <select id="cardOrientation"
+                            onchange="updateOrientation()">
+
+                        <option value="portrait">
+                            Portrait (Vertical)
+                        </option>
+
+                        <option value="landscape">
+                            Landscape (Horizontal)
                         </option>
 
                     </select>
@@ -880,26 +810,14 @@
 
             <div class="preview-area">
 
-                <div class="canvas-wrapper">
-
+                <div class="canvas-wrapper portrait-canvas" id="frontCanvasWrapper">
                     <h4>Front Canvas</h4>
-
-                    <div class="id-card"
-                         id="templateCanvasFront">
-                    </div>
-
+                    <div class="id-card" id="templateCanvasFront"></div>
                 </div>
 
-                <div class="canvas-wrapper"
-                     id="backCanvasContainer"
-                     style="display:none;">
-
+                <div class="canvas-wrapper portrait-canvas" id="backCanvasContainer" style="display:none;">
                     <h4>Back Canvas</h4>
-
-                    <div class="id-card"
-                         id="templateCanvasBack">
-                    </div>
-
+                    <div class="id-card" id="templateCanvasBack"></div>
                 </div>
 
             </div>
@@ -1030,12 +948,13 @@
             id: 'proj_1',
             name: 'Company A ID',
             format: 'single',
+            orientation: 'portrait',
             themeColor: '#2563eb',
             bgImage: '',
             elements: [
                 { id: 'f_banner', side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 0, width: 220, height: 65, bg: '#2563eb', isThemeable: true },
                 { id: 'f_org', side: 'front', type: 'text', dataSource: 'static', content: 'COMPANY NAME', x: 15, y: 20, width: 180, height: 30, fontSize: '15px', color: '#ffffff', align: 'center' },
-                { id: 'f_photo', side: 'front', type: 'photo', dataSource: 'database', dbField: 'Photo', x: 62, y: 85, width: 80, height: 80 },
+                { id: 'f_photo', side: 'front', type: 'photo', dataSource: 'database', dbField: 'Photo', x: 62, y: 85, width: 80, height: 80, imageShape: 'circle' },
                 { id: 'f_name', side: 'front', type: 'text', dataSource: 'database', dbField: 'Full Name', content: '{val}', x: 15, y: 190, width: 180, height: 30, fontSize: '18px', color: '#1f2937', align: 'center' },
                 { id: 'f_barcode', side: 'front', type: 'barcode', dataSource: 'database', dbField: 'ID Number', content: '12345678', barcodeType: 'CODE128', x: 20, y: 240, width: 160, height: 50 },
                 { id: 'f_footer', side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 310, width: 220, height: 20, bg: '#2563eb', isThemeable: true }
@@ -1047,6 +966,61 @@
     let projects = [];
     let activeProjectId = '';
 
+    // Undo / Redo Stacks
+    let undoStack = [];
+    let redoStack = [];
+    const MAX_HISTORY = 30;
+
+    function pushHistory() {
+        undoStack.push(JSON.stringify(projects));
+        if (undoStack.length > MAX_HISTORY) {
+            undoStack.shift();
+        }
+        redoStack = []; // Clear redo on new actions
+    }
+
+    function undoAction() {
+        if (undoStack.length === 0) {
+            alert("No more actions to undo.");
+            return;
+        }
+        redoStack.push(JSON.stringify(projects));
+        const prev = undoStack.pop();
+        projects = JSON.parse(prev);
+        saveStateInternal();
+        renderProjectSelector();
+        renderTemplateCanvas();
+        updatePrintStyles();
+        if (document.getElementById('database').classList.contains('active')) {
+            renderDatabaseForm();
+            renderTable();
+        }
+        if (document.getElementById('print').classList.contains('active')) {
+            generateCards();
+        }
+    }
+
+    function redoAction() {
+        if (redoStack.length === 0) {
+            alert("No more actions to redo.");
+            return;
+        }
+        undoStack.push(JSON.stringify(projects));
+        const next = redoStack.pop();
+        projects = JSON.parse(next);
+        saveStateInternal();
+        renderProjectSelector();
+        renderTemplateCanvas();
+        updatePrintStyles();
+        if (document.getElementById('database').classList.contains('active')) {
+            renderDatabaseForm();
+            renderTable();
+        }
+        if (document.getElementById('print').classList.contains('active')) {
+            generateCards();
+        }
+    }
+
     function initEntitySession() {
         if (!currentEntity) {
             document.getElementById('entityModal').style.display = 'flex';
@@ -1056,6 +1030,7 @@
             loadEntityData();
             renderProjectSelector();
             renderTemplateCanvas();
+            updatePrintStyles();
         }
     }
 
@@ -1072,6 +1047,7 @@
         loadEntityData();
         renderProjectSelector();
         renderTemplateCanvas();
+        updatePrintStyles();
     }
 
     function switchEntityPrompt() {
@@ -1105,6 +1081,7 @@
         if (!Array.isArray(p.db)) p.db = [];
         if (!p.themeColor) p.themeColor = '#2563eb';
         if (!p.format) p.format = 'single';
+        if (!p.orientation) p.orientation = 'portrait';
         if (typeof p.bgImage !== 'string') p.bgImage = '';
 
         p.elements.forEach(el => {
@@ -1115,10 +1092,15 @@
         return p;
     }
 
-    function saveState() {
+    function saveStateInternal() {
         const storageKey = 'id_maker_store_' + currentEntity;
         localStorage.setItem(storageKey, JSON.stringify(projects));
         localStorage.setItem('id_active_project_id_' + currentEntity, activeProjectId);
+    }
+
+    function saveState() {
+        pushHistory();
+        saveStateInternal();
     }
 
     function resetAllProjects() {
@@ -1138,11 +1120,13 @@
 
         const active = getActiveProject();
         if (confirm(`Are you sure you want to delete project "${active.name}"?`)) {
+            pushHistory();
             projects = projects.filter(p => p.id !== activeProjectId);
             activeProjectId = projects[0].id;
-            saveState();
+            saveStateInternal();
             renderProjectSelector();
             renderTemplateCanvas();
+            updatePrintStyles();
 
             if (document.getElementById('database').classList.contains('active')) {
                 renderDatabaseForm();
@@ -1171,6 +1155,7 @@
         const active = getActiveProject();
         document.getElementById('projectNameInput').value = active.name;
         document.getElementById('cardFormat').value = active.format;
+        document.getElementById('cardOrientation').value = active.orientation;
         document.getElementById('themeColor').value = active.themeColor;
         document.getElementById('dbProjectNameDisplay').innerText = active.name;
         document.getElementById('printProjectNameDisplay').innerText = active.name;
@@ -1178,15 +1163,17 @@
 
         document.documentElement.style.setProperty('--primary', active.themeColor);
         updateFormatUI();
+        updatePrintStyles();
     }
 
     function switchProject(id) {
         activeProjectId = id;
         selectedElementId = null;
         resetDatabaseForm();
-        saveState();
+        saveStateInternal();
         renderProjectSelector();
         renderTemplateCanvas();
+        updatePrintStyles();
 
         if (document.getElementById('database').classList.contains('active')) {
             renderDatabaseForm();
@@ -1198,6 +1185,7 @@
     }
 
     function createNewProject() {
+        pushHistory();
         const timestamp = Date.now();
         const newId = 'proj_' + timestamp;
 
@@ -1205,6 +1193,7 @@
             id: newId,
             name: 'Design Project ' + (projects.length + 1),
             format: 'single',
+            orientation: 'portrait',
             themeColor: '#059669',
             bgImage: '',
             elements: [
@@ -1220,8 +1209,10 @@
 
     function updateProjectName(val) {
         const active = getActiveProject();
+        if (active.name === val) return;
+        pushHistory();
         active.name = val;
-        saveState();
+        saveStateInternal();
         renderProjectSelector();
     }
 
@@ -1258,12 +1249,67 @@
 
     function updateFormat() {
         const active = getActiveProject();
-        active.format = document.getElementById('cardFormat').value;
-        saveState();
+        const val = document.getElementById('cardFormat').value;
+        if (active.format === val) return;
+        pushHistory();
+        active.format = val;
+        saveStateInternal();
         updateFormatUI();
         renderElementEditor();
         if (document.getElementById('print').classList.contains('active')) {
             generateCards();
+        }
+    }
+
+    function updateOrientation() {
+        const active = getActiveProject();
+        const val = document.getElementById('cardOrientation').value;
+        if (active.orientation === val) return;
+        pushHistory();
+        active.orientation = val;
+        saveStateInternal();
+        renderTemplateCanvas();
+        updatePrintStyles();
+        if (document.getElementById('print').classList.contains('active')) {
+            generateCards();
+        }
+    }
+
+    function updatePrintStyles() {
+        const active = getActiveProject();
+        const isLandscape = active.orientation === 'landscape';
+        const w = isLandscape ? '3.375in' : '2.125in';
+        const h = isLandscape ? '2.125in' : '3.375in';
+
+        const frontWrapper = document.getElementById('frontCanvasWrapper');
+        const backWrapper = document.getElementById('backCanvasContainer');
+        [frontWrapper, backWrapper].forEach(wBox => {
+            if (!wBox) return;
+            if (isLandscape) {
+                wBox.className = 'canvas-wrapper landscape-canvas';
+            } else {
+                wBox.className = 'canvas-wrapper portrait-canvas';
+            }
+        });
+
+        const printStyleEl = document.getElementById('runtimePrintStyle');
+        if (printStyleEl) {
+            printStyleEl.innerHTML = `
+                @media print {
+                    @page {
+                        size: ${w} ${h};
+                        margin: 0;
+                    }
+                    html, body, .container, #print, .print-grid, .card-container-wrapper, .id-card {
+                        width: ${w} !important;
+                        min-width: ${w} !important;
+                        max-width: ${w} !important;
+                        height: ${h} !important;
+                        min-height: ${h} !important;
+                        max-height: ${h} !important;
+                    }
+                }
+            `;
         }
     }
 
@@ -1279,6 +1325,8 @@
         if (!colorInput) return;
 
         const newColor = colorInput.value;
+        if (active.themeColor === newColor) return;
+        pushHistory();
         active.themeColor = newColor;
         document.documentElement.style.setProperty('--primary', newColor);
 
@@ -1288,7 +1336,7 @@
             }
         });
 
-        saveState();
+        saveStateInternal();
         renderTemplateCanvas();
 
         const printTab = document.getElementById('print');
@@ -1304,8 +1352,9 @@
 
         const reader = new FileReader();
         reader.onload = function(e) {
+            pushHistory();
             active.bgImage = e.target.result;
-            saveState();
+            saveStateInternal();
             applyBackgroundsToCanvases();
             if (document.getElementById('print').classList.contains('active')) {
                 generateCards();
@@ -1316,8 +1365,10 @@
 
     function removeBgImage() {
         const active = getActiveProject();
+        if (!active.bgImage) return;
+        pushHistory();
         active.bgImage = '';
-        saveState();
+        saveStateInternal();
         applyBackgroundsToCanvases();
         if (document.getElementById('print').classList.contains('active')) {
             generateCards();
@@ -1329,9 +1380,15 @@
         const front = document.getElementById('templateCanvasFront');
         const back = document.getElementById('templateCanvasBack');
         const backgroundImage = active.bgImage || '';
+        const isLandscape = active.orientation === 'landscape';
+
+        const cardWidth = isLandscape ? '3.375in' : '2.125in';
+        const cardHeight = isLandscape ? '2.125in' : '3.375in';
 
         [front, back].forEach(card => {
             if (!card) return;
+            card.style.setProperty('width', cardWidth, 'important');
+            card.style.setProperty('height', cardHeight, 'important');
             card.style.setProperty('background-color', 'white', 'important');
             if (backgroundImage) {
                 card.style.setProperty('background-image', `url("${backgroundImage}")`, 'important');
@@ -1345,9 +1402,10 @@
     }
 
     function addElement(type, side) {
+        pushHistory();
         const active = getActiveProject();
         const newId = 'el_' + Date.now();
-        let newEl = { id: newId, side: side, type: type, x: 15, y: 150 };
+        let newEl = { id: newId, side: side, type: type, x: 15, y: 15 };
 
         if (type === 'shape') {
             newEl.dataSource = 'static';
@@ -1376,10 +1434,11 @@
             newEl.dbField = 'Photo';
             newEl.width = 80;
             newEl.height = 80;
+            newEl.imageShape = 'circle';
         }
 
         active.elements.push(newEl);
-        saveState();
+        saveStateInternal();
         renderTemplateCanvas();
     }
 
@@ -1390,6 +1449,7 @@
 
         const reader = new FileReader();
         reader.onload = function(e) {
+            pushHistory();
             active.elements.push({
                 id: 'el_logo_' + Date.now(),
                 side: side,
@@ -1399,9 +1459,10 @@
                 y: 130,
                 width: 60,
                 height: 60,
+                imageShape: 'square',
                 src: e.target.result
             });
-            saveState();
+            saveStateInternal();
             renderTemplateCanvas();
         };
         reader.readAsDataURL(file);
@@ -1413,10 +1474,32 @@
 
         const reader = new FileReader();
         reader.onload = function(e) {
+            pushHistory();
             selectedElementId = elId;
             updateSelectedElementProp('src', e.target.result, false);
         };
         reader.readAsDataURL(file);
+    }
+
+    function moveLayer(direction) {
+        const active = getActiveProject();
+        const index = active.elements.findIndex(item => item.id === selectedElementId);
+        if (index === -1) return;
+
+        if (direction === 'up' && index < active.elements.length - 1) {
+            pushHistory();
+            const temp = active.elements[index];
+            active.elements[index] = active.elements[index + 1];
+            active.elements[index + 1] = temp;
+        } else if (direction === 'down' && index > 0) {
+            pushHistory();
+            const temp = active.elements[index];
+            active.elements[index] = active.elements[index - 1];
+            active.elements[index - 1] = temp;
+        }
+
+        saveStateInternal();
+        renderTemplateCanvas(true);
     }
 
     function renderTemplateCanvas(updateEditor = true) {
@@ -1428,6 +1511,7 @@
         if (backCanvas) backCanvas.innerHTML = '';
 
         applyBackgroundsToCanvases();
+        updatePrintStyles();
 
         active.elements.forEach(el => {
             const div = createDOMElement(el, null, 1.75, true);
@@ -1584,43 +1668,56 @@
             let objX = elData.objX !== undefined ? elData.objX : 50;
             let objY = elData.objY !== undefined ? elData.objY : 50;
             let zoom = elData.zoom || 1;
+            let shape = elData.imageShape || (elData.type === 'photo' ? 'circle' : 'square');
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'img-wrapper';
+            wrapper.style.width = '100%';
+            wrapper.style.height = '100%';
+            wrapper.style.overflow = 'hidden';
+            wrapper.style.background = '#e5e7eb';
+            wrapper.style.boxSizing = 'border-box';
+
+            if (shape === 'circle') {
+                wrapper.style.borderRadius = '50%';
+            } else if (shape === 'rounded') {
+                wrapper.style.borderRadius = '8px';
+            } else {
+                wrapper.style.borderRadius = '0px';
+            }
+
+            const img = document.createElement('img');
+            img.src = imgSrc || (elData.type === 'photo' ? defaultAvatar : defaultLogo);
+            img.onerror = function() {
+                this.onerror = null;
+                this.src = elData.type === 'photo' ? defaultAvatar : defaultLogo;
+            };
 
             if (elData.type === 'photo') {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'img-wrapper';
-
-                const img = document.createElement('img');
-                img.src = imgSrc || defaultAvatar;
-                img.onerror = function() {
-                    this.onerror = null;
-                    this.src = defaultAvatar;
-                };
-
+                img.style.objectFit = 'cover';
                 img.style.objectPosition = `${objX}% ${objY}%`;
                 img.style.transform = `scale(${zoom})`;
-
-                wrapper.appendChild(img);
-                div.appendChild(wrapper);
             } else {
-                const img = document.createElement('img');
-                img.src = imgSrc || defaultLogo;
-                img.onerror = function() {
-                    this.onerror = null;
-                    this.src = defaultLogo;
-                };
+                img.style.objectFit = 'contain';
                 img.style.width = '100%';
                 img.style.height = '100%';
-                img.style.objectFit = 'contain';
-                div.appendChild(img);
             }
+
+            wrapper.appendChild(img);
+            div.appendChild(wrapper);
         }
 
         const handle = document.createElement('div');
         handle.className = 'resize-handle';
         div.appendChild(handle);
 
+        let isInteracting = false;
         handle.addEventListener('pointerdown', function(e) {
             e.stopPropagation();
+            if (!isInteracting) {
+                pushHistory();
+                isInteracting = true;
+            }
             let startX = e.clientX;
             let startY = e.clientY;
             let startW = elData.width || 80;
@@ -1639,7 +1736,8 @@
             function stopResize() {
                 window.removeEventListener('pointermove', doResize);
                 window.removeEventListener('pointerup', stopResize);
-                saveState();
+                saveStateInternal();
+                isInteracting = false;
                 if (isTemplateCanvas) {
                     renderTemplateCanvas(false);
                 }
@@ -1716,6 +1814,14 @@
                         `
                         : ''
                 }
+            </div>
+
+            <div class="form-group" style="background:#f1f5f9; padding:0.5rem; border-radius:4px; margin-bottom:1rem;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#475569; margin-bottom:0.3rem;">Layer Ordering (Front / Back)</label>
+                <div style="display:flex; gap:0.5rem;">
+                    <button type="button" class="secondary-btn" style="flex:1; margin-bottom:0;" onclick="moveLayer('up')">Bring Forward</button>
+                    <button type="button" class="secondary-btn" style="flex:1; margin-bottom:0;" onclick="moveLayer('down')">Send Backward</button>
+                </div>
             </div>
         `;
 
@@ -1883,7 +1989,17 @@
                 `;
             }
 
+            const currentImageShape = el.imageShape || (el.type === 'photo' ? 'circle' : 'square');
+
             html += `
+                <div class="form-group">
+                    <label>Image Shape / Corners</label>
+                    <select onchange="updateSelectedElementProp('imageShape', this.value, true)">
+                        <option value="circle" ${currentImageShape === 'circle' ? 'selected' : ''}>Circle / Oval</option>
+                        <option value="square" ${currentImageShape === 'square' ? 'selected' : ''}>Square (Sharp)</option>
+                        <option value="rounded" ${currentImageShape === 'rounded' ? 'selected' : ''}>Rounded Corners</option>
+                    </select>
+                </div>
                 <div style="display:flex; gap:1rem;">
                     <div class="form-group" style="flex:1;">
                         <label>Width (px)</label>
@@ -1897,7 +2013,7 @@
             `;
         }
 
-        html += `<button class="action-btn" style="background:#dc2626; padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteSelectedElement('${el.id}')">Delete Element</button>`;
+        html += `<button class="action-btn" style="background:#dc2626; padding:0.3rem 0.6rem; font-size:0.8rem; margin-top:1rem;" onclick="deleteSelectedElement('${el.id}')">Delete Element</button>`;
         panel.innerHTML = html;
     }
 
@@ -1906,7 +2022,7 @@
         const el = active.elements.find(item => item.id === selectedElementId);
         if (!el) return;
         el[prop] = val;
-        saveState();
+        saveStateInternal();
 
         const domEl = document.querySelector(`.card-element[data-id="${selectedElementId}"] span`);
         if (domEl) {
@@ -1924,9 +2040,10 @@
         const el = active.elements.find(item => item.id === id);
         if (!el || el.type !== 'shape') return;
 
+        pushHistory();
         el.isThemeable = true;
         el.bg = active.themeColor;
-        saveState();
+        saveStateInternal();
         selectedElementId = id;
         renderTemplateCanvas();
     }
@@ -1935,6 +2052,10 @@
         const active = getActiveProject();
         const el = active.elements.find(item => item.id === selectedElementId);
         if (!el) return;
+
+        if (el[prop] !== val) {
+            pushHistory();
+        }
 
         el[prop] = val;
         if (prop === 'bg') el.isThemeable = false;
@@ -1948,7 +2069,7 @@
             }
         }
 
-        saveState();
+        saveStateInternal();
         renderTemplateCanvas(false);
         if (redrawEditor) {
             renderElementEditor();
@@ -1956,15 +2077,17 @@
     }
 
     function deleteSelectedElement(id) {
+        pushHistory();
         const active = getActiveProject();
         active.elements = active.elements.filter(item => item.id !== id);
         selectedElementId = null;
-        saveState();
+        saveStateInternal();
         renderTemplateCanvas();
     }
 
     function makeDraggable(element, elData, scaleFactor, isTemplateCanvas) {
         let startX = 0, startY = 0;
+        let hasPushed = false;
 
         element.addEventListener('pointerdown', pointerDown);
 
@@ -1972,6 +2095,7 @@
             if (e.target.classList.contains('resize-handle')) return;
             startX = e.clientX;
             startY = e.clientY;
+            hasPushed = false;
 
             window.addEventListener('pointermove', pointerMove);
             window.addEventListener('pointerup', pointerUp);
@@ -1988,6 +2112,13 @@
             let dy = (e.clientY - startY) / scaleFactor;
             startX = e.clientX;
             startY = e.clientY;
+
+            if (dx !== 0 || dy !== 0) {
+                if (!hasPushed) {
+                    pushHistory();
+                    hasPushed = true;
+                }
+            }
 
             if (!isTemplateCanvas && elData.type === 'photo') {
                 elData.objX = elData.objX !== undefined ? elData.objX : 50;
@@ -2014,7 +2145,7 @@
         function pointerUp() {
             window.removeEventListener('pointermove', pointerMove);
             window.removeEventListener('pointerup', pointerUp);
-            saveState();
+            saveStateInternal();
         }
     }
 
@@ -2125,6 +2256,7 @@
             }
         }
 
+        pushHistory();
         if (existingRecord) {
             existingRecord.fields = recordData;
             existingRecord.selectedToPrint = existingRecord.selectedToPrint !== false;
@@ -2138,7 +2270,7 @@
         }
 
         try {
-            saveState();
+            saveStateInternal();
         } catch (error) {
             alert('Storage limit reached. Try using smaller images.');
             return;
@@ -2184,8 +2316,9 @@
         const active = getActiveProject();
         const record = active.db.find(r => r.id === id);
         if (record) {
+            pushHistory();
             record.selectedToPrint = checkbox.checked;
-            saveState();
+            saveStateInternal();
         }
     }
 
@@ -2208,10 +2341,11 @@
     }
 
     function deleteRecord(id) {
+        pushHistory();
         const active = getActiveProject();
         if (editingRecordId === id) resetDatabaseForm();
         active.db = active.db.filter(record => record.id !== id);
-        saveState();
+        saveStateInternal();
         renderTable();
         document.getElementById('dbCountBadge').innerText = active.db.length;
     }
@@ -2265,6 +2399,11 @@
             return;
         }
 
+        const isLandscape = active.orientation === 'landscape';
+        const cardWidth = isLandscape ? '3.375in' : '2.125in';
+        const cardHeight = isLandscape ? '2.125in' : '3.375in';
+        const wrapperClass = 'card-container-wrapper ' + (isLandscape ? 'landscape-wrapper' : 'portrait-wrapper');
+
         recordsToPrint.forEach((record, index) => {
             let cardElements = JSON.parse(JSON.stringify(active.elements));
 
@@ -2277,10 +2416,12 @@
 
             // FRONT
             const frontWrapper = document.createElement('div');
-            frontWrapper.className = 'card-container-wrapper';
+            frontWrapper.className = wrapperClass;
 
             const frontCard = document.createElement('div');
             frontCard.className = 'id-card';
+            frontCard.style.setProperty('width', cardWidth, 'important');
+            frontCard.style.setProperty('height', cardHeight, 'important');
             frontCard.style.setProperty('background-color', 'white', 'important');
 
             if (active.bgImage) {
@@ -2303,10 +2444,12 @@
             // BACK
             if (active.format === 'dual') {
                 const backWrapper = document.createElement('div');
-                backWrapper.className = 'card-container-wrapper';
+                backWrapper.className = wrapperClass;
 
                 const backCard = document.createElement('div');
                 backCard.className = 'id-card';
+                backCard.style.setProperty('width', cardWidth, 'important');
+                backCard.style.setProperty('height', cardHeight, 'important');
                 backCard.style.setProperty('background-color', 'white', 'important');
 
                 if (active.bgImage) {
