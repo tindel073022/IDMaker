@@ -1247,15 +1247,15 @@
                     }
                     html, body {
                         width: ${w} !important;
-                        height: auto !important;
+                        height: 100% !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: white !important;
-                        overflow: visible !important;
+                        overflow: hidden !important;
                     }
                     .container {
                         width: ${w} !important;
-                        height: auto !important;
+                        height: 100% !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: transparent !important;
@@ -1265,7 +1265,7 @@
                     #print {
                         display: block !important;
                         width: ${w} !important;
-                        height: auto !important;
+                        height: 100% !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: transparent !important;
@@ -1273,7 +1273,7 @@
                     .print-grid {
                         display: block !important;
                         width: ${w} !important;
-                        height: auto !important;
+                        height: 100% !important;
                         margin: 0 !important;
                         padding: 0 !important;
                     }
@@ -1283,6 +1283,8 @@
                         height: ${h} !important;
                         min-width: ${w} !important;
                         min-height: ${h} !important;
+                        max-width: ${w} !important;
+                        max-height: ${h} !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         position: relative !important;
@@ -1290,6 +1292,7 @@
                         break-after: page !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
+                        overflow: hidden !important;
                     }
                     .card-container-wrapper .id-card {
                         width: ${w} !important;
@@ -1300,16 +1303,20 @@
                         max-height: ${h} !important;
                         margin: 0 !important;
                         padding: 0 !important;
-                        position: relative !important;
+                        position: absolute !important;
+                        top: 0 !important;
+                        left: 0 !important;
                         transform: none !important;
                         border: none !important;
                         border-radius: 0 !important;
                         box-shadow: none !important;
+                        overflow: hidden !important;
                     }
-                    /* Automatically rotate back card 180 degrees during print if landscape to account for printer hardware flip */
+                    /* Safely rotate back card 180 degrees during print in landscape mode without causing page overflow */
                     ${isLandscape ? `
                     .back-card-wrapper .id-card {
                         transform: rotate(180deg) !important;
+                        transform-origin: center center !important;
                     }
                     ` : ''}
                     .project-bar, .tabs, #design, #database, .print-header-controls, .card-label, #printPhotoTools, .resize-handle {
