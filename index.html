@@ -1335,7 +1335,7 @@
             newEl.height = 30;
             newEl.fontSize = '14px';
             newEl.color = '#1f2937';
-            newEl.align = 'center'; // Defaults new text to center
+            newEl.align = 'center'; // Consistent default center alignment
         } else if (type === 'photo') {
             newEl.dataSource = 'database';
             newEl.dbField = 'Photo';
@@ -1438,20 +1438,20 @@
             div.style.width = (elData.width || 150) + 'px';
             div.style.height = (elData.height || 30) + 'px';
 
+            // Consistent box anchor (center-anchored at elData.x)
+            div.style.transform = 'translateX(-50%)';
+
             const alignment = elData.align || 'center';
 
-            if (alignment === 'center') {
-                div.style.transform = 'translateX(-50%)';
-                div.style.justifyContent = 'center';
-                div.style.textAlign = 'center';
+            if (alignment === 'left') {
+                div.style.justifyContent = 'flex-start';
+                div.style.textAlign = 'left';
             } else if (alignment === 'right') {
-                div.style.transform = 'translateX(-100%)';
                 div.style.justifyContent = 'flex-end';
                 div.style.textAlign = 'right';
             } else {
-                div.style.transform = 'none';
-                div.style.justifyContent = 'flex-start';
-                div.style.textAlign = 'left';
+                div.style.justifyContent = 'center';
+                div.style.textAlign = 'center';
             }
 
             let displayText = '';
