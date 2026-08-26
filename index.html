@@ -1477,7 +1477,7 @@
         reader.onload = function(e) {
             pushHistory();
             selectedElementId = elId;
-            updateSelectedElementProp('src', e.target.result, false);
+            updateElementField('src', e.target.result);
         };
         reader.readAsDataURL(file);
     }
@@ -1843,18 +1843,18 @@
                 html += `
                     <div class="form-group">
                         <label style="color:#059669; font-weight:bold;">Database Column Name</label>
-                        <input type="text" value="${encodeHTML(el.dbField || '')}" placeholder="e.g. Employee ID" oninput="updateTextContentDirectly('dbField', this.value)">
+                        <input type="text" value="${encodeHTML(el.dbField || '')}" placeholder="e.g. Employee ID" oninput="updateElementField('dbField', this.value)">
                     </div>
                     <div class="form-group">
                         <label>Text Mask (Optional)</label>
-                        <input type="text" value="${encodeHTML(el.content || '{val}')}" oninput="updateTextContentDirectly('content', this.value)">
+                        <input type="text" value="${encodeHTML(el.content || '{val}')}" oninput="updateElementField('content', this.value)">
                     </div>
                 `;
             } else {
                 html += `
                     <div class="form-group">
                         <label>Static Text Content</label>
-                        <input type="text" value="${encodeHTML(el.content || '')}" oninput="updateTextContentDirectly('content', this.value)">
+                        <input type="text" value="${encodeHTML(el.content || '')}" oninput="updateElementField('content', this.value)">
                     </div>
                 `;
             }
@@ -1903,14 +1903,14 @@
                 html += `
                     <div class="form-group">
                         <label style="color:#059669; font-weight:bold;">Database Column Name</label>
-                        <input type="text" value="${encodeHTML(el.dbField || 'ID Number')}" oninput="updateTextContentDirectly('dbField', this.value)">
+                        <input type="text" value="${encodeHTML(el.dbField || 'ID Number')}" oninput="updateElementField('dbField', this.value)">
                     </div>
                 `;
             } else {
                 html += `
                     <div class="form-group">
                         <label>Static Barcode Value</label>
-                        <input type="text" value="${encodeHTML(el.content || '12345678')}" oninput="updateTextContentDirectly('content', this.value)">
+                        <input type="text" value="${encodeHTML(el.content || '12345678')}" oninput="updateElementField('content', this.value)">
                     </div>
                 `;
             }
@@ -1978,7 +1978,7 @@
                 html += `
                     <div class="form-group">
                         <label style="color:#059669; font-weight:bold;">Database Column Name</label>
-                        <input type="text" value="${encodeHTML(el.dbField || 'Photo')}" oninput="updateTextContentDirectly('dbField', this.value)">
+                        <input type="text" value="${encodeHTML(el.dbField || 'Photo')}" oninput="updateElementField('dbField', this.value)">
                     </div>
                 `;
             } else {
@@ -2018,22 +2018,16 @@
         panel.innerHTML = html;
     }
 
-    function updateTextContentDirectly(prop, val) {
+    function updateElementField(prop, val) {
         const active = getActiveProject();
         const el = active.elements.find(item => item.id === selectedElementId);
         if (!el) return;
+        if (el[prop] !== val) {
+            pushHistory();
+        }
         el[prop] = val;
         saveStateInternal();
-
-        const domEl = document.querySelector(`.card-element[data-id="${selectedElementId}"] span`);
-        if (domEl) {
-            if (el.dataSource === 'database') {
-                const mask = el.content || '{val}';
-                domEl.innerText = mask.includes('{val}') ? mask.replace('{val}', val) : val;
-            } else {
-                domEl.innerText = val;
-            }
-        }
+        renderTemplateCanvas(false);
     }
 
     function makeElementThemeable(id) {
