@@ -1335,7 +1335,7 @@
             newEl.height = 30;
             newEl.fontSize = '14px';
             newEl.color = '#1f2937';
-            newEl.align = 'left';
+            newEl.align = 'center'; // Default new text to center
         } else if (type === 'photo') {
             newEl.dataSource = 'database';
             newEl.dbField = 'Photo';
@@ -1438,12 +1438,14 @@
             div.style.width = (elData.width || 150) + 'px';
             div.style.height = (elData.height || 30) + 'px';
 
-            // FIXED TEXT ALIGNMENT & TRANSFORM RESTORED FOR CONSISTENCY
-            if (elData.align === 'center') {
+            // Robust alignment fallback defaulting to center if missing
+            const alignment = elData.align || 'center';
+
+            if (alignment === 'center') {
                 div.style.transform = 'translateX(-50%)';
                 div.style.justifyContent = 'center';
                 div.style.textAlign = 'center';
-            } else if (elData.align === 'right') {
+            } else if (alignment === 'right') {
                 div.style.transform = 'translateX(-100%)';
                 div.style.justifyContent = 'flex-end';
                 div.style.textAlign = 'right';
@@ -1655,6 +1657,8 @@
                 `;
             }
 
+            const currentAlign = el.align || 'center';
+
             html += `
                 <div style="display:flex; gap:1rem;">
                     <div class="form-group" style="flex:1;">
@@ -1679,9 +1683,9 @@
                 <div class="form-group">
                     <label>Alignment</label>
                     <select onchange="updateSelectedElementProp('align', this.value)">
-                        <option value="left" ${el.align === 'left' ? 'selected' : ''}>Left</option>
-                        <option value="center" ${el.align === 'center' ? 'selected' : ''}>Center</option>
-                        <option value="right" ${el.align === 'right' ? 'selected' : ''}>Right</option>
+                        <option value="left" ${currentAlign === 'left' ? 'selected' : ''}>Left</option>
+                        <option value="center" ${currentAlign === 'center' ? 'selected' : ''}>Center</option>
+                        <option value="right" ${currentAlign === 'right' ? 'selected' : ''}>Right</option>
                     </select>
                 </div>
             `;
