@@ -424,68 +424,6 @@
             margin-top: 1.5rem;
             font-weight: 500;
         }
-
-        /* =========================================================
-           PRINT STYLES (Dynamic print rules injected via runtimePrintStyle)
-           ========================================================= */
-        @media print {
-            body {
-                background: white !important;
-                overflow: hidden !important;
-            }
-            .container {
-                display: block !important;
-                background: transparent !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            .project-bar,
-            .tabs,
-            #design,
-            #database,
-            .print-header-controls,
-            .card-label,
-            #printPhotoTools {
-                display: none !important;
-            }
-            #print {
-                display: block !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background: transparent !important;
-            }
-            .print-grid {
-                display: block !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            .card-container-wrapper {
-                display: block !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                position: relative !important;
-                page-break-after: always !important;
-                break-after: page !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-            .card-container-wrapper:last-child {
-                page-break-after: auto !important;
-                break-after: auto !important;
-            }
-            .card-element {
-                position: absolute !important;
-                cursor: default !important;
-            }
-            .card-element.selected {
-                outline: none !important;
-            }
-            .resize-handle {
-                display: none !important;
-            }
-        }
     </style>
 </head>
 
@@ -976,7 +914,7 @@
         if (undoStack.length > MAX_HISTORY) {
             undoStack.shift();
         }
-        redoStack = []; // Clear redo on new actions
+        redoStack = [];
     }
 
     function undoAction() {
@@ -986,7 +924,9 @@
         }
         redoStack.push(JSON.stringify(projects));
         const prev = undoStack.pop();
-        projects = JSON.parse(prev);
+        try {
+            projects = JSON.parse(prev);
+        } catch(e) {}
         saveStateInternal();
         renderProjectSelector();
         renderTemplateCanvas();
@@ -1007,7 +947,9 @@
         }
         undoStack.push(JSON.stringify(projects));
         const next = redoStack.pop();
-        projects = JSON.parse(next);
+        try {
+            projects = JSON.parse(next);
+        } catch(e) {}
         saveStateInternal();
         renderProjectSelector();
         renderTemplateCanvas();
@@ -1057,9 +999,12 @@
 
     function loadEntityData() {
         const storageKey = 'id_maker_store_' + currentEntity;
-        const storedProjects = JSON.parse(localStorage.getItem(storageKey));
-        
-        projects = Array.isArray(storedProjects) && storedProjects.length ? storedProjects : JSON.parse(JSON.stringify(defaultProjects));
+        try {
+            const storedProjects = JSON.parse(localStorage.getItem(storageKey));
+            projects = Array.isArray(storedProjects) && storedProjects.length ? storedProjects : JSON.parse(JSON.stringify(defaultProjects));
+        } catch (e) {
+            projects = JSON.parse(JSON.stringify(defaultProjects));
+        }
         activeProjectId = localStorage.getItem('id_active_project_id_' + currentEntity) || projects[0].id;
     }
 
@@ -1300,13 +1245,69 @@
                         size: ${w} ${h};
                         margin: 0;
                     }
-                    html, body, .container, #print, .print-grid, .card-container-wrapper, .id-card {
+                    html, body {
                         width: ${w} !important;
-                        min-width: ${w} !important;
-                        max-width: ${w} !important;
+                        height: auto !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: white !important;
+                        overflow: visible !important;
+                    }
+                    .container {
+                        width: ${w} !important;
+                        height: auto !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: transparent !important;
+                        border-radius: 0 !important;
+                        box-shadow: none !important;
+                    }
+                    #print {
+                        display: block !important;
+                        width: ${w} !important;
+                        height: auto !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: transparent !important;
+                    }
+                    .print-grid {
+                        display: block !important;
+                        width: ${w} !important;
+                        height: auto !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+                    .card-container-wrapper {
+                        display: block !important;
+                        width: ${w} !important;
                         height: ${h} !important;
+                        min-width: ${w} !important;
                         min-height: ${h} !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        position: relative !important;
+                        page-break-after: always !important;
+                        break-after: page !important;
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                    }
+                    .card-container-wrapper .id-card {
+                        width: ${w} !important;
+                        height: ${h} !important;
+                        min-width: ${w} !important;
+                        min-height: ${h} !important;
+                        max-width: ${w} !important;
                         max-height: ${h} !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        position: relative !important;
+                        transform: none !important;
+                        border: none !important;
+                        border-radius: 0 !important;
+                        box-shadow: none !important;
+                    }
+                    .project-bar, .tabs, #design, #database, .print-header-controls, .card-label, #printPhotoTools, .resize-handle {
+                        display: none !important;
                     }
                 }
             `;
