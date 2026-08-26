@@ -1,0 +1,5054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Project Dynamic ID Card Designer</title>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-color: #f3f4f6;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        /* =========================================================
+           TOP PROJECT BAR
+           ========================================================= */
+
+        .project-bar {
+            background: #1e293b;
+            color: white;
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .project-bar select {
+            background: #334155;
+            color: white;
+            border: 1px solid #475569;
+            padding: 0.4rem;
+            border-radius: 4px;
+        }
+
+        /* =========================================================
+           TABS
+           ========================================================= */
+
+        .tabs {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            background: white;
+        }
+
+        /* =========================================================
+           TAB CONTENT
+           ========================================================= */
+
+        .tab-content {
+            display: none;
+            padding: 2rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* =========================================================
+           FORMS
+           ========================================================= */
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"],
+        input[type="color"],
+        input[type="file"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        button.action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        button.action-btn:hover {
+            filter: brightness(0.92);
+        }
+
+        button.secondary-btn {
+            background: #475569;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        button.secondary-btn:hover {
+            background: #334155;
+        }
+
+        /* =========================================================
+           DATABASE
+           ========================================================= */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f8fafc;
+        }
+
+        .db-thumbnail {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e5e7eb;
+            border: 1px solid #cbd5e1;
+        }
+
+        /* =========================================================
+           DESIGN LAYOUT
+           ========================================================= */
+
+        .layout-split {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            flex: 1;
+            min-width: 320px;
+            position: sticky;
+            top: 1rem;
+            align-self: flex-start;
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .controls::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .controls::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .controls::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .preview-area {
+            flex: 1.5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 2rem;
+            min-width: 320px;
+            background: #f8fafc;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+            flex-wrap: wrap;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 6.2in;
+            min-width: 4in;
+        }
+
+        .canvas-wrapper h4 {
+            margin: 0 0 1rem 0;
+            color: #64748b;
+        }
+
+        .canvas-wrapper .id-card {
+            transform: scale(1.75);
+            transform-origin: top center;
+        }
+
+        /* =========================================================
+           ID CARD
+           ========================================================= */
+
+        .id-card {
+            width: 2.125in;
+            height: 3.375in;
+
+            background-color: white;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            position: relative;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        /* =========================================================
+           CARD ELEMENTS
+           ========================================================= */
+
+        .card-element {
+            position: absolute;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .card-element:active {
+            cursor: grabbing;
+        }
+
+        .card-element.selected {
+            outline: 2px dashed var(--primary);
+            z-index: 10;
+        }
+
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            cursor: nwse-resize;
+            display: none;
+            z-index: 100;
+            transform: translate(50%, 50%);
+        }
+
+        .card-element.selected .resize-handle {
+            display: block;
+        }
+
+        /* =========================================================
+           ELEMENT TYPES
+           ========================================================= */
+
+        .el-shape {
+            background: var(--primary);
+        }
+
+        .el-text {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .el-photo .img-wrapper {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+            overflow: hidden;
+            background: #e5e7eb;
+            box-sizing: border-box;
+        }
+
+        .el-photo img,
+        .el-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .el-logo {
+            overflow: visible;
+        }
+
+        /* =========================================================
+           PRINT CARD DISPLAY
+           ========================================================= */
+
+        .print-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: flex-start;
+        }
+
+        .card-container-wrapper {
+            text-align: center;
+            min-height: 5.5in;
+            min-width: 3.5in;
+            margin-bottom: 1rem;
+        }
+
+        .card-container-wrapper .id-card {
+            transform: scale(1.5);
+            transform-origin: top center;
+            margin: 0 auto;
+        }
+
+        .card-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        /* =========================================================
+           PRINT STYLES
+           ========================================================= */
+
+        @media print {
+
+            @page {
+                size: 2.125in 3.375in;
+                margin: 0;
+            }
+
+            html,
+            body {
+                width: 2.125in !important;
+                min-width: 2.125in !important;
+
+                height: 3.375in !important;
+                min-height: 3.375in !important;
+
+                margin: 0 !important;
+                padding: 0 !important;
+
+                background: white !important;
+            }
+
+            body {
+                overflow: hidden !important;
+            }
+
+            .container {
+                display: block !important;
+
+                width: 2.125in !important;
+                min-width: 2.125in !important;
+                max-width: 2.125in !important;
+
+                height: auto !important;
+
+                margin: 0 !important;
+                padding: 0 !important;
+
+                background: transparent !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+            }
+
+            .project-bar,
+            .tabs,
+            #design,
+            #database,
+            .print-header-controls,
+            .card-label,
+            #printPhotoTools {
+                display: none !important;
+            }
+
+            #print {
+                display: block !important;
+
+                width: 2.125in !important;
+                min-width: 2.125in !important;
+
+                height: auto !important;
+
+                margin: 0 !important;
+                padding: 0 !important;
+
+                background: transparent !important;
+            }
+
+            .print-grid {
+                display: block !important;
+
+                width: 2.125in !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .card-container-wrapper {
+                display: block !important;
+
+                width: 2.125in !important;
+                min-width: 2.125in !important;
+
+                height: 3.375in !important;
+                min-height: 3.375in !important;
+
+                margin: 0 !important;
+                padding: 0 !important;
+
+                position: relative !important;
+
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .card-container-wrapper:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            .card-container-wrapper .id-card,
+            .id-card {
+                display: block !important;
+
+                width: 2.125in !important;
+                min-width: 2.125in !important;
+                max-width: 2.125in !important;
+
+                height: 3.375in !important;
+                min-height: 3.375in !important;
+                max-height: 3.375in !important;
+
+                position: relative !important;
+
+                top: auto !important;
+                left: auto !important;
+
+                margin: 0 !important;
+                padding: 0 !important;
+
+                transform: none !important;
+                transform-origin: top left !important;
+
+                border: none !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+
+                overflow: hidden !important;
+                background-color: white !important;
+
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .card-element {
+                position: absolute !important;
+                cursor: default !important;
+            }
+
+            .card-element.selected {
+                outline: none !important;
+            }
+
+            .resize-handle {
+                display: none !important;
+            }
+
+            *,
+            *::before,
+            *::after {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            img {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- =========================================================
+         PROJECT BAR
+         ========================================================= -->
+
+    <div class="project-bar">
+
+        <div style="display:flex; align-items:center; gap:1rem;">
+            <strong>Active Design Project:</strong>
+
+            <select id="projectSelector"
+                    onchange="switchProject(this.value)">
+            </select>
+        </div>
+
+        <div style="display:flex; gap:0.5rem; flex-wrap: wrap;">
+
+            <button class="action-btn"
+                    style="background:#059669; padding:0.3rem 0.8rem; font-size:0.85rem;"
+                    onclick="createNewProject()">
+                + Create New Design
+            </button>
+
+            <button class="action-btn"
+                    style="background:#b91c1c; padding:0.3rem 0.8rem; font-size:0.85rem;"
+                    onclick="deleteCurrentProject()">
+                Delete Project
+            </button>
+
+            <button class="action-btn"
+                    style="background:#dc2626; padding:0.3rem 0.8rem; font-size:0.85rem;"
+                    onclick="resetAllProjects()">
+                Reset All
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+         TABS
+         ========================================================= -->
+
+    <div class="tabs">
+
+        <button class="tab-btn active"
+                onclick="switchTab('design', this)">
+            1. Design Layout
+        </button>
+
+        <button class="tab-btn"
+                onclick="switchTab('database', this)">
+            2. Database (<span id="dbCountBadge">0</span>)
+        </button>
+
+        <button class="tab-btn"
+                onclick="switchTab('print', this)">
+            3. Generate & Edit Cards
+        </button>
+
+    </div>
+
+    <!-- =========================================================
+         DESIGN TAB
+         ========================================================= -->
+
+    <div id="design" class="tab-content active">
+
+        <h2>ID Card Layout Designer</h2>
+
+        <p style="color:#64748b; font-size:0.9rem; margin-top:-0.5rem;">
+            Changes here apply only to the active design project selected above.
+        </p>
+
+        <div class="layout-split">
+
+            <div class="controls">
+
+                <div class="form-group">
+                    <label>Project Name</label>
+
+                    <input type="text"
+                           id="projectNameInput"
+                           oninput="updateProjectName(this.value)">
+                </div>
+
+                <div class="form-group">
+
+                    <label>Card Format</label>
+
+                    <select id="cardFormat"
+                            onchange="updateFormat()">
+
+                        <option value="single">
+                            Single-Sided
+                        </option>
+
+                        <option value="dual">
+                            Dual-Sided (Front & Back)
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Global Theme Color</label>
+
+                    <input type="color"
+                           id="themeColor"
+                           value="#2563eb"
+                           oninput="updateThemeColor()">
+
+                </div>
+
+                <hr style="border:0; border-top:1px solid var(--border); margin:1.5rem 0;">
+
+                <label style="font-weight:bold; margin-bottom:0.75rem;">
+                    Card Background Image:
+                </label>
+
+                <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+                    <div class="form-group" style="flex:1;">
+                        <button class="secondary-btn"
+                                style="width:100%; margin-bottom:0;"
+                                onclick="document.getElementById('uploadBgInput').click()">
+                            Upload BG Image
+                        </button>
+
+                        <input type="file"
+                               id="uploadBgInput"
+                               accept="image/*"
+                               style="display:none"
+                               onchange="handleBgImageUpload(event)">
+                    </div>
+
+                    <div style="flex:1;">
+                        <button class="secondary-btn"
+                                style="background:#dc2626; width:100%; margin-bottom:0;"
+                                onclick="removeBgImage()">
+                            Remove BG Image
+                        </button>
+                    </div>
+                </div>
+
+                <hr style="border:0; border-top:1px solid var(--border); margin:1.5rem 0;">
+
+                <label style="font-weight:bold; margin-bottom:0.75rem;">
+                    Add Design Elements:
+                </label>
+
+                <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+
+                    <!-- FRONT -->
+
+                    <div style="flex:1; background:#f8fafc; padding:0.75rem; border-radius:6px; border:1px solid var(--border);">
+
+                        <span style="font-size:0.8rem; font-weight:bold; display:block; margin-bottom:0.5rem; color:#64748b;">
+                            FRONT CARD
+                        </span>
+
+                        <button class="secondary-btn"
+                                style="width:100%;"
+                                onclick="addElement('shape','front')">
+                            + Shape Banner
+                        </button>
+
+                        <button class="secondary-btn"
+                                style="width:100%;"
+                                onclick="addElement('text','front')">
+                            + Text Label
+                        </button>
+
+                        <button class="secondary-btn"
+                                style="width:100%;"
+                                onclick="addElement('photo','front')">
+                            + Add Photo Area
+                        </button>
+
+                        <button class="secondary-btn"
+                                style="width:100%; margin-bottom:0;"
+                                onclick="document.getElementById('uploadLogoInputFront').click()">
+                            + Upload Static Logo
+                        </button>
+
+                        <input type="file"
+                               id="uploadLogoInputFront"
+                               accept="image/*"
+                               style="display:none"
+                               onchange="handleLogoUpload(event,'front')">
+
+                    </div>
+
+                    <!-- BACK -->
+
+                    <div id="addBackControls"
+                         style="flex:1; background:#f8fafc; padding:0.75rem; border-radius:6px; border:1px solid var(--border); display:none;">
+
+                        <span style="font-size:0.8rem; font-weight:bold; display:block; margin-bottom:0.5rem; color:#64748b;">
+                            BACK CARD
+                        </span>
+
+                        <button class="secondary-btn"
+                                style="width:100%;"
+                                onclick="addElement('shape','back')">
+                            + Shape Banner
+                        </button>
+
+                        <button class="secondary-btn"
+                                style="width:100%;"
+                                onclick="addElement('text','back')">
+                            + Text Label
+                        </button>
+
+                        <button class="secondary-btn"
+                                style="width:100%;"
+                                onclick="addElement('photo','back')">
+                            + Add Photo Area
+                        </button>
+
+                        <button class="secondary-btn"
+                                style="width:100%; margin-bottom:0;"
+                                onclick="document.getElementById('uploadLogoInputBack').click()">
+                            + Upload Static Logo
+                        </button>
+
+                        <input type="file"
+                               id="uploadLogoInputBack"
+                               accept="image/*"
+                               style="display:none"
+                               onchange="handleLogoUpload(event,'back')">
+
+                    </div>
+
+                </div>
+
+                <div class="form-group" style="margin-top:1.5rem;">
+
+                    <label>Selected Element Options</label>
+
+                    <div id="elementEditorPanel"
+                         style="background:#f8fafc; padding:1rem; border-radius:6px; border:1px solid var(--border);">
+
+                        <p style="color:#94a3b8; font-size:0.85rem; margin:0;">
+                            Click any item on the card preview to edit its data source,
+                            color, or delete it.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- PREVIEW -->
+
+            <div class="preview-area">
+
+                <div class="canvas-wrapper">
+
+                    <h4>Front Canvas</h4>
+
+                    <div class="id-card"
+                         id="templateCanvasFront">
+                    </div>
+
+                </div>
+
+                <div class="canvas-wrapper"
+                     id="backCanvasContainer"
+                     style="display:none;">
+
+                    <h4>Back Canvas</h4>
+
+                    <div class="id-card"
+                         id="templateCanvasBack">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+         DATABASE TAB
+         ========================================================= -->
+
+    <div id="database" class="tab-content">
+
+        <h2>
+            Cardholder Database
+            (<span id="dbProjectNameDisplay">Project</span>)
+        </h2>
+
+        <p style="color:#64748b; font-size:0.9rem; margin-top:-0.5rem;"
+           id="dbHeaderNote">
+            Add or edit records for your employee batch.
+            Check the boxes for who you want to print.
+        </p>
+
+        <div style="background:#f8fafc; padding:1rem; border-radius:6px; border:1px solid #e5e7eb; margin-bottom:2rem;">
+
+            <div id="dynamicDbForm"></div>
+
+            <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+
+                <button class="action-btn"
+                        id="dbSubmitBtn"
+                        onclick="saveRecord()">
+                    Add to Database
+                </button>
+
+                <button class="secondary-btn"
+                        id="dbCancelBtn"
+                        onclick="resetDatabaseForm()"
+                        style="display:none; margin-bottom:0;">
+                    Cancel Edit
+                </button>
+
+            </div>
+
+        </div>
+
+        <table>
+
+            <thead id="dynamicDbHead"></thead>
+
+            <tbody id="dbTableBody"></tbody>
+
+        </table>
+
+    </div>
+
+    <!-- =========================================================
+         PRINT TAB
+         ========================================================= -->
+
+    <div id="print" class="tab-content">
+
+        <div class="print-header-controls"
+             style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+
+            <div>
+
+                <h2>
+                    Generated ID Cards
+                    (<span id="printProjectNameDisplay">Project</span>)
+                </h2>
+
+                <p style="color:#64748b; font-size:0.9rem; margin-top:-0.5rem;"
+                   id="printHelperText">
+                    Review your dynamically generated cards below.
+                </p>
+
+            </div>
+
+            <div id="printPhotoTools"
+                 style="display:none; align-items:center; gap:1rem; background:#f8fafc; padding:0.5rem 1rem; border-radius:6px; border:1px dashed var(--primary);">
+
+                <label style="margin:0; font-size:0.85rem; font-weight:bold; color:var(--primary);">
+                    Face Adjust / Zoom:
+                </label>
+
+                <input type="range"
+                       id="printPhotoZoom"
+                       min="0.5"
+                       max="3"
+                       step="0.05"
+                       value="1"
+                       oninput="updatePrintPhotoZoom(this.value)">
+
+                <span style="font-size:0.75rem; color:#64748b;">
+                    Drag the photo below to center face
+                </span>
+
+            </div>
+
+            <button class="action-btn"
+                    onclick="printCards()">
+                Print Cards
+            </button>
+
+        </div>
+
+        <div class="print-grid"
+             id="printGrid">
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    /* =========================================================
+       DEFAULT PROJECT
+       ========================================================= */
+
+    let defaultProjects = [
+
+        {
+            id: 'proj_1',
+
+            name: 'Company A ID',
+
+            format: 'single',
+
+            themeColor: '#2563eb',
+
+            bgImage: '',
+
+            elements: [
+
+                {
+                    id: 'f_banner',
+                    side: 'front',
+                    type: 'shape',
+                    shapeType: 'rectangle',
+                    dataSource: 'static',
+                    x: -5,
+                    y: 0,
+                    width: 220,
+                    height: 65,
+                    bg: '#2563eb',
+                    isThemeable: true
+                },
+
+                {
+                    id: 'f_org',
+                    side: 'front',
+                    type: 'text',
+                    dataSource: 'static',
+                    content: 'COMPANY NAME',
+                    x: 102,
+                    y: 20,
+                    width: 180,
+                    height: 30,
+                    fontSize: '15px',
+                    color: '#ffffff',
+                    align: 'center'
+                },
+
+                {
+                    id: 'f_photo',
+                    side: 'front',
+                    type: 'photo',
+                    dataSource: 'database',
+                    dbField: 'Photo',
+                    x: 62,
+                    y: 85,
+                    width: 80,
+                    height: 80
+                },
+
+                {
+                    id: 'f_name',
+                    side: 'front',
+                    type: 'text',
+                    dataSource: 'database',
+                    dbField: 'Full Name',
+                    content: '{val}',
+                    x: 102,
+                    y: 190,
+                    width: 180,
+                    height: 30,
+                    fontSize: '18px',
+                    color: '#1f2937',
+                    align: 'center'
+                },
+
+                {
+                    id: 'f_role',
+                    side: 'front',
+                    type: 'text',
+                    dataSource: 'database',
+                    dbField: 'Role',
+                    content: '{val}',
+                    x: 102,
+                    y: 220,
+                    width: 180,
+                    height: 25,
+                    fontSize: '13px',
+                    color: '#6b7280',
+                    align: 'center'
+                },
+
+                {
+                    id: 'f_num',
+                    side: 'front',
+                    type: 'text',
+                    dataSource: 'database',
+                    dbField: 'ID Number',
+                    content: 'ID: {val}',
+                    x: 102,
+                    y: 280,
+                    width: 180,
+                    height: 25,
+                    fontSize: '13px',
+                    color: '#374151',
+                    align: 'center'
+                },
+
+                {
+                    id: 'f_footer',
+                    side: 'front',
+                    type: 'shape',
+                    shapeType: 'rectangle',
+                    dataSource: 'static',
+                    x: -5,
+                    y: 310,
+                    width: 220,
+                    height: 20,
+                    bg: '#2563eb',
+                    isThemeable: true
+                }
+
+            ],
+
+            db: []
+        }
+
+    ];
+
+
+    /* =========================================================
+       STORAGE
+       ========================================================= */
+
+    let storedProjects =
+        JSON.parse(
+            localStorage.getItem('id_multiproject_store')
+        );
+
+    let projects =
+        Array.isArray(storedProjects) &&
+        storedProjects.length
+            ? storedProjects
+            : defaultProjects;
+
+    let activeProjectId =
+        localStorage.getItem('id_active_project_id')
+        || projects[0].id;
+
+
+    let selectedElementId = null;
+
+    let dynamicUploadCache = {};
+
+    let generatedElements = [];
+
+    let editingRecordId = null;
+
+
+    /* =========================================================
+       DEFAULT IMAGES
+       ========================================================= */
+
+    const defaultAvatar =
+        "data:image/svg+xml;utf8," +
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'>" +
+        "<path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/>" +
+        "</svg>";
+
+
+    const defaultLogo =
+        "data:image/svg+xml;utf8," +
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'>" +
+        "<path d='M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z'/>" +
+        "</svg>";
+
+
+    /* =========================================================
+       ACTIVE PROJECT
+       ========================================================= */
+
+    function getActiveProject() {
+
+        let p =
+            projects.find(
+                proj =>
+                    proj.id === activeProjectId
+            );
+
+        if (!p) {
+
+            activeProjectId =
+                projects[0].id;
+
+            p =
+                projects[0];
+
+        }
+
+        if (!Array.isArray(p.elements))
+            p.elements = [];
+
+        if (!Array.isArray(p.db))
+            p.db = [];
+
+        if (!p.themeColor)
+            p.themeColor = '#2563eb';
+
+        if (!p.format)
+            p.format = 'single';
+
+        if (typeof p.bgImage !== 'string')
+            p.bgImage = '';
+
+
+        p.elements.forEach(el => {
+
+            if (
+                el.type === 'shape' &&
+                el.isThemeable === true
+            ) {
+
+                el.bg = p.themeColor;
+
+            }
+
+        });
+
+
+        return p;
+
+    }
+
+
+    /* =========================================================
+       SAVE
+       ========================================================= */
+
+    function saveState() {
+
+        localStorage.setItem(
+            'id_multiproject_store',
+            JSON.stringify(projects)
+        );
+
+        localStorage.setItem(
+            'id_active_project_id',
+            activeProjectId
+        );
+
+    }
+
+
+    /* =========================================================
+       RESET
+       ========================================================= */
+
+    function resetAllProjects() {
+
+        if (
+            confirm(
+                "Are you sure you want to reset all designs and databases?"
+            )
+        ) {
+
+            localStorage.removeItem(
+                'id_multiproject_store'
+            );
+
+            localStorage.removeItem(
+                'id_active_project_id'
+            );
+
+            location.reload();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       DELETE CURRENT PROJECT
+       ========================================================= */
+
+    function deleteCurrentProject() {
+        if (projects.length <= 1) {
+            alert("You must keep at least one project design. You cannot delete the last remaining project.");
+            return;
+        }
+
+        const active = getActiveProject();
+        if (confirm(`Are you sure you want to delete project "${active.name}"? This action cannot be undone.`)) {
+            projects = projects.filter(p => p.id !== activeProjectId);
+            activeProjectId = projects[0].id;
+            saveState();
+            renderProjectSelector();
+            renderTemplateCanvas();
+
+            if (document.getElementById('database').classList.contains('active')) {
+                renderDatabaseForm();
+                renderTable();
+            }
+
+            if (document.getElementById('print').classList.contains('active')) {
+                generateCards();
+            }
+        }
+    }
+
+
+    /* =========================================================
+       PROJECT SELECTOR
+       ========================================================= */
+
+    function renderProjectSelector() {
+
+        const selector =
+            document.getElementById(
+                'projectSelector'
+            );
+
+        if (!selector)
+            return;
+
+        selector.innerHTML = '';
+
+
+        projects.forEach(p => {
+
+            const opt =
+                document.createElement(
+                    'option'
+                );
+
+            opt.value =
+                p.id;
+
+            opt.innerText =
+                p.name;
+
+            if (
+                p.id ===
+                activeProjectId
+            )
+                opt.selected = true;
+
+            selector.appendChild(opt);
+
+        });
+
+
+        const active =
+            getActiveProject();
+
+
+        document.getElementById(
+            'projectNameInput'
+        ).value =
+            active.name;
+
+
+        document.getElementById(
+            'cardFormat'
+        ).value =
+            active.format;
+
+
+        document.getElementById(
+            'themeColor'
+        ).value =
+            active.themeColor;
+
+
+        document.getElementById(
+            'dbProjectNameDisplay'
+        ).innerText =
+            active.name;
+
+
+        document.getElementById(
+            'printProjectNameDisplay'
+        ).innerText =
+            active.name;
+
+
+        document.getElementById(
+            'dbCountBadge'
+        ).innerText =
+            active.db.length;
+
+
+        document.documentElement.style.setProperty(
+            '--primary',
+            active.themeColor
+        );
+
+
+        updateFormatUI();
+
+    }
+
+
+    /* =========================================================
+       SWITCH PROJECT
+       ========================================================= */
+
+    function switchProject(id) {
+
+        activeProjectId =
+            id;
+
+        selectedElementId =
+            null;
+
+        resetDatabaseForm();
+
+        saveState();
+
+        renderProjectSelector();
+
+        renderTemplateCanvas();
+
+
+        if (
+            document
+                .getElementById('database')
+                .classList.contains('active')
+        ) {
+
+            renderDatabaseForm();
+
+            renderTable();
+
+        }
+
+
+        if (
+            document
+                .getElementById('print')
+                .classList.contains('active')
+        ) {
+
+            generateCards();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       CREATE PROJECT
+       ========================================================= */
+
+    function createNewProject() {
+
+        const timestamp =
+            Date.now();
+
+        const newId =
+            'proj_' + timestamp;
+
+
+        const newProj = {
+
+            id:
+                newId,
+
+            name:
+                'Design Project ' +
+                (projects.length + 1),
+
+            format:
+                'single',
+
+            themeColor:
+                '#059669',
+
+            bgImage:
+                '',
+
+            elements: [
+
+                {
+                    id:
+                        'f_banner_' +
+                        timestamp,
+
+                    side:
+                        'front',
+
+                    type:
+                        'shape',
+
+                    shapeType:
+                        'rectangle',
+
+                    dataSource:
+                        'static',
+
+                    x:
+                        -5,
+
+                    y:
+                        0,
+
+                    width:
+                        220,
+
+                    height:
+                        65,
+
+                    bg:
+                        '#059669',
+
+                    isThemeable:
+                        true
+                },
+
+                {
+                    id:
+                        'f_name_' +
+                        timestamp,
+
+                    side:
+                        'front',
+
+                    type:
+                        'text',
+
+                    dataSource:
+                        'database',
+
+                    dbField:
+                        'Full Name',
+
+                    content:
+                        '{val}',
+
+                    x:
+                        102,
+
+                    y:
+                        150,
+
+                    width:
+                        180,
+
+                    height:
+                        30,
+
+                    fontSize:
+                        '18px',
+
+                    color:
+                        '#1f2937',
+
+                    align:
+                        'center'
+                }
+
+            ],
+
+            db: []
+
+        };
+
+
+        projects.push(
+            newProj
+        );
+
+        switchProject(
+            newId
+        );
+
+    }
+
+
+    /* =========================================================
+       PROJECT NAME
+       ========================================================= */
+
+    function updateProjectName(val) {
+
+        const active =
+            getActiveProject();
+
+        active.name =
+            val;
+
+        saveState();
+
+        renderProjectSelector();
+
+    }
+
+
+    /* =========================================================
+       HTML ENCODING
+       ========================================================= */
+
+    function encodeHTML(str) {
+
+        if (
+            str === undefined ||
+            str === null
+        )
+            return '';
+
+        return String(str)
+            .replace(
+                /&/g,
+                '&amp;'
+            )
+            .replace(
+                /</g,
+                '&lt;'
+            )
+            .replace(
+                />/g,
+                '&gt;'
+            )
+            .replace(
+                /"/g,
+                '&quot;'
+            );
+
+    }
+
+
+    /* =========================================================
+       OUTSIDE CLICK
+       ========================================================= */
+
+    document.addEventListener(
+        'pointerdown',
+        function(e) {
+
+            if (
+                !e.target.closest(
+                    '.card-element'
+                ) &&
+                !e.target.closest(
+                    '#elementEditorPanel'
+                ) &&
+                !e.target.closest(
+                    '#printPhotoTools'
+                )
+            ) {
+
+                selectedElementId =
+                    null;
+
+                highlightSelectedElement();
+
+                renderElementEditor();
+
+                document.getElementById(
+                    'printPhotoTools'
+                ).style.display =
+                    'none';
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       SWITCH TAB
+       ========================================================= */
+
+    function switchTab(
+        tabId,
+        clickedButton
+    ) {
+
+        document
+            .querySelectorAll(
+                '.tab-content'
+            )
+            .forEach(
+                tab =>
+                    tab.classList.remove(
+                        'active'
+                    )
+            );
+
+
+        document
+            .querySelectorAll(
+                '.tab-btn'
+            )
+            .forEach(
+                btn =>
+                    btn.classList.remove(
+                        'active'
+                    )
+            );
+
+
+        document
+            .getElementById(
+                tabId
+            )
+            .classList.add(
+                'active'
+            );
+
+
+        if (clickedButton)
+            clickedButton.classList.add(
+                'active'
+            );
+
+
+        if (
+            tabId ===
+            'database'
+        ) {
+
+            renderDatabaseForm();
+
+            renderTable();
+
+        }
+
+        else if (
+            tabId ===
+            'print'
+        ) {
+
+            generateCards();
+
+        }
+
+        else if (
+            tabId ===
+            'design'
+        ) {
+
+            renderTemplateCanvas();
+
+            document.getElementById(
+                'printPhotoTools'
+            ).style.display =
+                'none';
+
+        }
+
+    }
+
+
+    /* =========================================================
+       FORMAT
+       ========================================================= */
+
+    function updateFormat() {
+
+        const active =
+            getActiveProject();
+
+        active.format =
+            document.getElementById(
+                'cardFormat'
+            ).value;
+
+        saveState();
+
+        updateFormatUI();
+
+        renderElementEditor();
+
+        if (
+            document
+                .getElementById('print')
+                .classList.contains('active')
+        ) {
+
+            generateCards();
+
+        }
+
+    }
+
+
+    function updateFormatUI() {
+
+        const active =
+            getActiveProject();
+
+
+        document.getElementById(
+            'backCanvasContainer'
+        ).style.display =
+            active.format === 'dual'
+                ? 'flex'
+                : 'none';
+
+
+        document.getElementById(
+            'addBackControls'
+        ).style.display =
+            active.format === 'dual'
+                ? 'block'
+                : 'none';
+
+    }
+
+
+    /* =========================================================
+       THEME COLOR
+       ========================================================= */
+
+    function updateThemeColor() {
+
+        const active =
+            getActiveProject();
+
+        const colorInput =
+            document.getElementById(
+                'themeColor'
+            );
+
+        if (!colorInput)
+            return;
+
+
+        const newColor =
+            colorInput.value;
+
+
+        active.themeColor =
+            newColor;
+
+
+        document.documentElement.style.setProperty(
+            '--primary',
+            newColor
+        );
+
+
+        active.elements.forEach(
+            el => {
+
+                if (
+                    el.type === 'shape' &&
+                    el.isThemeable === true
+                ) {
+
+                    el.bg =
+                        newColor;
+
+                }
+
+            }
+        );
+
+
+        saveState();
+
+
+        renderTemplateCanvas();
+
+
+        const printTab =
+            document.getElementById(
+                'print'
+            );
+
+        if (
+            printTab &&
+            printTab.classList.contains(
+                'active'
+            )
+        ) {
+
+            generateCards();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       BACKGROUND IMAGE
+       ========================================================= */
+
+    function handleBgImageUpload(event) {
+
+        const file =
+            event.target.files[0];
+
+        const active =
+            getActiveProject();
+
+
+        if (!file)
+            return;
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            function(e) {
+
+                active.bgImage =
+                    e.target.result;
+
+                saveState();
+
+                applyBackgroundsToCanvases();
+
+
+                if (
+                    document
+                        .getElementById('print')
+                        .classList.contains('active')
+                ) {
+
+                    generateCards();
+
+                }
+
+            };
+
+
+        reader.readAsDataURL(
+            file
+        );
+
+    }
+
+
+    function removeBgImage() {
+
+        const active =
+            getActiveProject();
+
+        active.bgImage =
+            '';
+
+
+        saveState();
+
+        applyBackgroundsToCanvases();
+
+
+        if (
+            document
+                .getElementById('print')
+                .classList.contains('active')
+        ) {
+
+            generateCards();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       APPLY BACKGROUNDS
+       ========================================================= */
+
+    function applyBackgroundsToCanvases() {
+
+        const active =
+            getActiveProject();
+
+
+        const front =
+            document.getElementById(
+                'templateCanvasFront'
+            );
+
+
+        const back =
+            document.getElementById(
+                'templateCanvasBack'
+            );
+
+
+        const backgroundImage =
+            active.bgImage ||
+            '';
+
+
+        [
+            front,
+            back
+        ].forEach(
+            card => {
+
+                if (!card)
+                    return;
+
+
+                card.style.setProperty(
+                    'background-color',
+                    'white',
+                    'important'
+                );
+
+
+                if (backgroundImage) {
+
+                    card.style.setProperty(
+                        'background-image',
+                        `url("${backgroundImage}")`,
+                        'important'
+                    );
+
+                }
+                else {
+
+                    card.style.setProperty(
+                        'background-image',
+                        'none',
+                        'important'
+                    );
+
+                }
+
+
+                card.style.backgroundSize =
+                    'cover';
+
+                card.style.backgroundPosition =
+                    'center';
+
+                card.style.backgroundRepeat =
+                    'no-repeat';
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       ADD ELEMENT
+       ========================================================= */
+
+    function addElement(
+        type,
+        side
+    ) {
+
+        const active =
+            getActiveProject();
+
+
+        const newId =
+            'el_' +
+            Date.now();
+
+
+        let newEl = {
+
+            id:
+                newId,
+
+            side:
+                side,
+
+            type:
+                type,
+
+            x:
+                50,
+
+            y:
+                150
+
+        };
+
+
+        if (
+            type ===
+            'shape'
+        ) {
+
+            newEl.dataSource =
+                'static';
+
+            newEl.width =
+                100;
+
+            newEl.height =
+                30;
+
+            newEl.shapeType =
+                'rectangle';
+
+            newEl.bg =
+                active.themeColor;
+
+            newEl.isThemeable =
+                true;
+
+        }
+
+        else if (
+            type ===
+            'text'
+        ) {
+
+            newEl.dataSource =
+                'static';
+
+            newEl.content =
+                'New Text';
+
+            newEl.width =
+                150;
+
+            newEl.height =
+                30;
+
+            newEl.fontSize =
+                '14px';
+
+            newEl.color =
+                '#1f2937';
+
+            newEl.align =
+                'left';
+
+        }
+
+        else if (
+            type ===
+            'photo'
+        ) {
+
+            newEl.dataSource =
+                'database';
+
+            newEl.dbField =
+                'Photo';
+
+            newEl.width =
+                80;
+
+            newEl.height =
+                80;
+
+        }
+
+
+        active.elements.push(
+            newEl
+        );
+
+
+        saveState();
+
+        renderTemplateCanvas();
+
+    }
+
+
+    /* =========================================================
+       LOGO UPLOAD
+       ========================================================= */
+
+    function handleLogoUpload(
+        event,
+        side
+    ) {
+
+        const file =
+            event.target.files[0];
+
+        const active =
+            getActiveProject();
+
+
+        if (!file)
+            return;
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            function(e) {
+
+                active.elements.push({
+
+                    id:
+                        'el_logo_' +
+                        Date.now(),
+
+                    side:
+                        side,
+
+                    type:
+                        'logo',
+
+                    dataSource:
+                        'static',
+
+                    x:
+                        70,
+
+                    y:
+                        130,
+
+                    width:
+                        60,
+
+                    height:
+                        60,
+
+                    src:
+                        e.target.result
+
+                });
+
+
+                saveState();
+
+                renderTemplateCanvas();
+
+            };
+
+
+        reader.readAsDataURL(
+            file
+        );
+
+    }
+
+
+    /* =========================================================
+       STATIC IMAGE UPLOAD
+       ========================================================= */
+
+    function handleStaticElementUpload(
+        event,
+        elId
+    ) {
+
+        const file =
+            event.target.files[0];
+
+
+        if (!file)
+            return;
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            function(e) {
+
+                selectedElementId =
+                    elId;
+
+
+                updateSelectedElementProp(
+                    'src',
+                    e.target.result
+                );
+
+            };
+
+
+        reader.readAsDataURL(
+            file
+        );
+
+    }
+
+
+    /* =========================================================
+       RENDER TEMPLATE
+       ========================================================= */
+
+    function renderTemplateCanvas(
+        updateEditor = true
+    ) {
+
+        const active =
+            getActiveProject();
+
+
+        const frontCanvas =
+            document.getElementById(
+                'templateCanvasFront'
+            );
+
+
+        const backCanvas =
+            document.getElementById(
+                'templateCanvasBack'
+            );
+
+
+        if (frontCanvas)
+            frontCanvas.innerHTML =
+                '';
+
+
+        if (backCanvas)
+            backCanvas.innerHTML =
+                '';
+
+
+        applyBackgroundsToCanvases();
+
+
+        active.elements.forEach(
+            el => {
+
+                const div =
+                    createDOMElement(
+                        el,
+                        null,
+                        1.75,
+                        true
+                    );
+
+
+                if (
+                    el.side ===
+                    'front' &&
+                    frontCanvas
+                ) {
+
+                    frontCanvas.appendChild(
+                        div
+                    );
+
+                }
+
+                else if (
+                    el.side ===
+                    'back' &&
+                    backCanvas
+                ) {
+
+                    backCanvas.appendChild(
+                        div
+                    );
+
+                }
+
+            }
+        );
+
+
+        if (updateEditor)
+            renderElementEditor();
+        else
+            highlightSelectedElement();
+
+    }
+
+
+    /* =========================================================
+       CREATE DOM ELEMENT
+       ========================================================= */
+
+    function createDOMElement(
+        elData,
+        recordData,
+        scaleFactor = 1,
+        isTemplateCanvas = false
+    ) {
+
+        const active =
+            getActiveProject();
+
+
+        const div =
+            document.createElement(
+                'div'
+            );
+
+
+        div.className =
+            'card-element';
+
+
+        div.style.left =
+            elData.x +
+            'px';
+
+
+        div.style.top =
+            elData.y +
+            'px';
+
+
+        div.dataset.id =
+            elData.uniqueId ||
+            elData.id;
+
+
+        /* =====================================================
+           SHAPE
+           ===================================================== */
+
+        if (
+            elData.type ===
+            'shape'
+        ) {
+
+            div.className +=
+                ' el-shape';
+
+
+            div.style.width =
+                (elData.width || 100) +
+                'px';
+
+
+            div.style.height =
+                (elData.height || 30) +
+                'px';
+
+
+            const shapeColor =
+                elData.isThemeable === true
+                    ? active.themeColor
+                    : (
+                        elData.bg ||
+                        active.themeColor
+                    );
+
+
+            div.style.setProperty(
+                'background-color',
+                shapeColor,
+                'important'
+            );
+
+
+            if (elData.shapeType === 'rounded') {
+                div.style.borderRadius = '8px';
+            } else if (elData.shapeType === 'pill') {
+                div.style.borderRadius = '9999px';
+            } else if (elData.shapeType === 'circle') {
+                div.style.borderRadius = '50%';
+            } else {
+                div.style.borderRadius = '0px';
+            }
+
+        }
+
+
+        /* =====================================================
+           TEXT
+           ===================================================== */
+
+        else if (
+            elData.type ===
+            'text'
+        ) {
+
+            div.className +=
+                ' el-text';
+
+
+            div.style.fontSize =
+                elData.fontSize ||
+                '14px';
+
+
+            div.style.width =
+                (elData.width || 150) +
+                'px';
+
+
+            div.style.height =
+                (elData.height || 30) +
+                'px';
+
+
+            if (
+                elData.align ===
+                'center'
+            ) {
+                div.style.justifyContent = 'center';
+                div.style.textAlign = 'center';
+            } else if (
+                elData.align ===
+                'right'
+            ) {
+                div.style.justifyContent = 'flex-end';
+                div.style.textAlign = 'right';
+            } else {
+                div.style.justifyContent = 'flex-start';
+                div.style.textAlign = 'left';
+            }
+
+
+            let displayText =
+                '';
+
+
+            if (
+                elData.dataSource ===
+                'database'
+            ) {
+
+                const dbVal =
+                    recordData &&
+                    recordData.fields
+                        ? (
+                            recordData.fields[
+                                elData.dbField
+                            ] || ''
+                        )
+                        : (
+                            `[${elData.dbField || '?'}]`
+                        );
+
+
+                const mask =
+                    elData.content ||
+                    '{val}';
+
+
+                displayText =
+                    mask.includes(
+                        '{val}'
+                    )
+                        ? mask.replace(
+                            '{val}',
+                            dbVal
+                        )
+                        : dbVal;
+
+            }
+
+            else {
+
+                displayText =
+                    elData.content ||
+                    '';
+
+            }
+
+
+            const span =
+                document.createElement(
+                    'span'
+                );
+
+
+            span.innerText =
+                displayText;
+
+
+            span.style.setProperty(
+                'color',
+                elData.color ||
+                    '#000000',
+                'important'
+            );
+
+
+            div.appendChild(
+                span
+            );
+
+        }
+
+
+        /* =====================================================
+           PHOTO / LOGO
+           ===================================================== */
+
+        else if (
+            elData.type ===
+                'photo' ||
+            elData.type ===
+                'logo'
+        ) {
+
+            let imgSrc =
+                elData.src;
+
+
+            if (
+                elData.dataSource ===
+                'database'
+            ) {
+
+                imgSrc =
+                    recordData &&
+                    recordData.fields &&
+                    recordData.fields[
+                        elData.dbField
+                    ]
+                        ? recordData.fields[
+                            elData.dbField
+                        ]
+                        : defaultAvatar;
+
+            }
+
+            else {
+
+                imgSrc =
+                    elData.src ||
+                    (
+                        elData.type ===
+                        'photo'
+                            ? defaultAvatar
+                            : defaultLogo
+                    );
+
+            }
+
+
+            div.className +=
+                elData.type ===
+                'photo'
+                    ? ' el-photo'
+                    : ' el-logo';
+
+
+            div.style.width =
+                (elData.width || 80) +
+                'px';
+
+
+            div.style.height =
+                (elData.height || 80) +
+                'px';
+
+
+            let objX =
+                elData.objX !==
+                undefined
+                    ? elData.objX
+                    : 50;
+
+
+            let objY =
+                elData.objY !==
+                undefined
+                    ? elData.objY
+                    : 50;
+
+
+            let zoom =
+                elData.zoom ||
+                1;
+
+
+            if (
+                elData.type ===
+                'photo'
+            ) {
+
+                const wrapper =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                wrapper.className =
+                    'img-wrapper';
+
+
+                const img =
+                    document.createElement(
+                        'img'
+                    );
+
+
+                img.src = imgSrc || defaultAvatar;
+                img.onerror = function() {
+                    this.onerror = null;
+                    this.src = defaultAvatar;
+                };
+
+
+                img.style.objectPosition =
+                    `${objX}% ${objY}%`;
+
+
+                img.style.transform =
+                    `scale(${zoom})`;
+
+
+                wrapper.appendChild(
+                    img
+                );
+
+
+                div.appendChild(
+                    wrapper
+                );
+
+            }
+
+            else {
+
+                const img =
+                    document.createElement(
+                        'img'
+                    );
+
+
+                img.src = imgSrc || defaultLogo;
+                img.onerror = function() {
+                    this.onerror = null;
+                    this.src = defaultLogo;
+                };
+
+
+                img.style.width =
+                    '100%';
+
+
+                img.style.height =
+                    '100%';
+
+
+                img.style.objectFit =
+                    'contain';
+
+
+                div.appendChild(
+                    img
+                );
+
+            }
+
+        }
+
+
+        /* =====================================================
+           RESIZE HANDLE (INDEPENDENT WIDTH & HEIGHT RESIZING)
+           ===================================================== */
+
+        const handle =
+            document.createElement(
+                'div'
+            );
+
+
+        handle.className =
+            'resize-handle';
+
+
+        div.appendChild(
+            handle
+        );
+
+
+        handle.addEventListener(
+            'pointerdown',
+            function(e) {
+
+                e.stopPropagation();
+
+
+                let startX =
+                    e.clientX;
+
+
+                let startY =
+                    e.clientY;
+
+
+                let startW =
+                    elData.width || 80;
+
+
+                let startH =
+                    elData.height || 80;
+
+
+                let startFontSize =
+                    parseFloat(
+                        elData.fontSize
+                    ) ||
+                    14;
+
+
+                function doResize(ev) {
+
+                    let dx =
+                        (
+                            ev.clientX -
+                            startX
+                        ) /
+                        scaleFactor;
+
+
+                    let dy =
+                        (
+                            ev.clientY -
+                            startY
+                        ) /
+                        scaleFactor;
+
+
+                    if (
+                        elData.type ===
+                        'text'
+                    ) {
+
+                        elData.width = Math.max(20, startW + dx);
+                        elData.height = Math.max(15, startH + dy);
+
+                        div.style.width = elData.width + 'px';
+                        div.style.height = elData.height + 'px';
+
+                    }
+                    else {
+                        elData.width = Math.max(15, startW + dx);
+                        elData.height = Math.max(10, startH + dy);
+
+                        div.style.width = elData.width + 'px';
+                        div.style.height = elData.height + 'px';
+                    }
+
+                }
+
+
+                function stopResize() {
+
+                    window.removeEventListener(
+                        'pointermove',
+                        doResize
+                    );
+
+
+                    window.removeEventListener(
+                        'pointerup',
+                        stopResize
+                    );
+
+
+                    saveState();
+
+
+                    if (
+                        isTemplateCanvas
+                    )
+                        renderElementEditor();
+
+                }
+
+
+                window.addEventListener(
+                    'pointermove',
+                    doResize
+                );
+
+
+                window.addEventListener(
+                    'pointerup',
+                    stopResize
+                );
+
+            }
+        );
+
+
+        makeDraggable(
+            div,
+            elData,
+            scaleFactor,
+            isTemplateCanvas
+        );
+
+
+        div.addEventListener(
+            'pointerdown',
+            function(e) {
+
+                e.stopPropagation();
+
+
+                selectedElementId =
+                    elData.uniqueId ||
+                    elData.id;
+
+
+                highlightSelectedElement();
+
+
+                if (
+                    isTemplateCanvas
+                ) {
+
+                    renderElementEditor();
+
+                }
+
+                else {
+
+                    if (
+                        elData.type ===
+                        'photo'
+                    ) {
+
+                        document.getElementById(
+                            'printPhotoTools'
+                        ).style.display =
+                            'flex';
+
+
+                        document.getElementById(
+                            'printPhotoZoom'
+                        ).value =
+                            elData.zoom ||
+                            1;
+
+                    }
+
+                    else {
+
+                        document.getElementById(
+                            'printPhotoTools'
+                        ).style.display =
+                            'none';
+
+                    }
+
+                }
+
+            }
+        );
+
+
+        return div;
+
+    }
+
+
+    /* =========================================================
+       PHOTO ZOOM
+       ========================================================= */
+
+    function updatePrintPhotoZoom(
+        val
+    ) {
+
+        if (!selectedElementId)
+            return;
+
+
+        const el =
+            generatedElements.find(
+                i =>
+                    i.uniqueId ===
+                    selectedElementId
+            );
+
+
+        if (
+            el &&
+            el.type ===
+            'photo'
+        ) {
+
+            el.zoom =
+                parseFloat(
+                    val
+                );
+
+
+            const domEl =
+                document.querySelector(
+                    `.card-element[data-id="${selectedElementId}"]`
+                );
+
+
+            if (domEl) {
+
+                const img =
+                    domEl.querySelector(
+                        'img'
+                    );
+
+
+                if (img)
+                    img.style.transform =
+                        `scale(${val})`;
+
+            }
+
+        }
+
+    }
+
+
+    /* =========================================================
+       HIGHLIGHT
+       ========================================================= */
+
+    function highlightSelectedElement() {
+
+        document
+            .querySelectorAll(
+                '.card-element'
+            )
+            .forEach(
+                el => {
+
+                    if (
+                        el.dataset.id ===
+                        selectedElementId
+                    )
+                        el.classList.add(
+                            'selected'
+                        );
+
+                    else
+                        el.classList.remove(
+                            'selected'
+                        );
+
+                }
+            );
+
+    }
+
+
+    /* =========================================================
+       ELEMENT EDITOR
+       ========================================================= */
+
+    function renderElementEditor() {
+
+        const active =
+            getActiveProject();
+
+
+        const panel =
+            document.getElementById(
+                'elementEditorPanel'
+            );
+
+
+        const el =
+            active.elements.find(
+                item =>
+                    item.id ===
+                    selectedElementId
+            );
+
+
+        if (!el) {
+
+            panel.innerHTML =
+                `<p style="color:#94a3b8; font-size:0.85rem; margin:0;">
+                    Click any item on the card preview to edit its data source,
+                    color, or delete it.
+                </p>`;
+
+
+            return;
+
+        }
+
+
+        let html = `
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+
+                <p style="font-size:0.85rem; font-weight:bold; margin:0;">
+                    Editing: ${el.type.toUpperCase()}
+                </p>
+
+                ${
+                    active.format ===
+                    'dual'
+                        ? `
+                            <select
+                                onchange="updateSelectedElementProp('side', this.value)"
+                                style="width:auto; padding:0.2rem; font-size:0.8rem; cursor:pointer;">
+
+                                <option value="front"
+                                    ${el.side === 'front' ? 'selected' : ''}>
+                                    Move to Front
+                                </option>
+
+                                <option value="back"
+                                    ${el.side === 'back' ? 'selected' : ''}>
+                                    Move to Back
+                                </option>
+
+                            </select>
+                        `
+                        : ''
+                }
+
+            </div>
+        `;
+
+
+        if (
+            el.type !==
+            'shape'
+        ) {
+
+            html += `
+
+                <div class="form-group"
+                     style="background:#e2e8f0; padding:0.5rem; border-radius:4px;">
+
+                    <label style="color:#334155; font-weight:bold;">
+                        Data Source Mapping
+                    </label>
+
+                    <select
+                        onchange="updateSelectedElementProp('dataSource', this.value)">
+
+                        <option value="static"
+                            ${el.dataSource === 'static' ? 'selected' : ''}>
+                            Static (Same on all cards)
+                        </option>
+
+                        <option value="database"
+                            ${el.dataSource === 'database' ? 'selected' : ''}>
+                            Database (Different per person)
+                        </option>
+
+                    </select>
+
+                </div>
+
+            `;
+
+        }
+
+
+        if (
+            el.type ===
+            'text'
+        ) {
+
+            if (
+                el.dataSource ===
+                'database'
+            ) {
+
+                html += `
+
+                    <div class="form-group">
+
+                        <label style="color:#059669; font-weight:bold;">
+                            Database Column Name
+                        </label>
+
+                        <input
+                            type="text"
+                            value="${encodeHTML(el.dbField || '')}"
+                            placeholder="e.g. Employee ID"
+                            oninput="updateTextContentDirectly('dbField', this.value)">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+                            Text Mask (Optional)
+                        </label>
+
+                        <input
+                            type="text"
+                            value="${encodeHTML(el.content || '{val}')}"
+                            oninput="updateTextContentDirectly('content', this.value)">
+
+                    </div>
+
+                `;
+
+            }
+
+            else {
+
+                html += `
+
+                    <div class="form-group">
+
+                        <label>
+                            Static Text Content
+                        </label>
+
+                        <input
+                            type="text"
+                            value="${encodeHTML(el.content || '')}"
+                            oninput="updateTextContentDirectly('content', this.value)">
+
+                    </div>
+
+                `;
+
+            }
+
+
+            html += `
+
+                <div style="display:flex; gap:1rem;">
+
+                    <div class="form-group" style="flex:1;">
+                        <label>Width (px)</label>
+                        <input type="number" value="${el.width || 150}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
+                    </div>
+
+                    <div class="form-group" style="flex:1;">
+                        <label>Height (px)</label>
+                        <input type="number" value="${el.height || 30}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
+                    </div>
+
+                </div>
+
+                <div style="display:flex; gap:1rem;">
+
+                    <div class="form-group" style="flex:1;">
+
+                        <label>
+                            Font Size (px)
+                        </label>
+
+                        <input
+                            type="number"
+                            value="${parseFloat(el.fontSize) || 14}"
+                            oninput="updateSelectedElementProp('fontSize', this.value + 'px')">
+
+                    </div>
+
+                    <div class="form-group" style="flex:1;">
+
+                        <label>
+                            Text Color
+                        </label>
+
+                        <input
+                            type="color"
+                            value="${el.color || '#000000'}"
+                            oninput="updateSelectedElementProp('color', this.value)"
+                            onchange="updateSelectedElementProp('color', this.value)">
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label>Alignment</label>
+                    <select onchange="updateSelectedElementProp('align', this.value)">
+                        <option value="left" ${el.align === 'left' ? 'selected' : ''}>Left</option>
+                        <option value="center" ${el.align === 'center' ? 'selected' : ''}>Center</option>
+                        <option value="right" ${el.align === 'right' ? 'selected' : ''}>Right</option>
+                    </select>
+                </div>
+
+            `;
+
+        }
+
+        else if (
+            el.type ===
+            'shape'
+        ) {
+
+            html += `
+
+                <div style="display:flex; gap:1rem;">
+
+                    <div class="form-group" style="flex:1;">
+
+                        <label>
+                            Width (px)
+                        </label>
+
+                        <input
+                            type="number"
+                            value="${el.width}"
+                            oninput="updateSelectedElementProp('width', parseInt(this.value))">
+
+                    </div>
+
+                    <div class="form-group" style="flex:1;">
+
+                        <label>
+                            Height (px)
+                        </label>
+
+                        <input
+                            type="number"
+                            value="${el.height}"
+                            oninput="updateSelectedElementProp('height', parseInt(this.value))">
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label>Shape Style / Corners</label>
+                    <select onchange="updateSelectedElementProp('shapeType', this.value)">
+                        <option value="rectangle" ${el.shapeType === 'rectangle' ? 'selected' : ''}>Rectangle (Sharp)</option>
+                        <option value="rounded" ${el.shapeType === 'rounded' ? 'selected' : ''}>Rounded Corners</option>
+                        <option value="pill" ${el.shapeType === 'pill' ? 'selected' : ''}>Pill / Badge</option>
+                        <option value="circle" ${el.shapeType === 'circle' ? 'selected' : ''}>Circle / Oval</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Shape Color
+                    </label>
+
+                    <input
+                        type="color"
+                        value="${el.bg || active.themeColor || '#2563eb'}"
+                        oninput="updateSelectedElementProp('bg', this.value)"
+                        onchange="updateSelectedElementProp('bg', this.value)">
+
+                    ${
+                        el.isThemeable
+                            ? `
+                                <p style="font-size:0.75rem; color:#64748b; margin:0.35rem 0 0;">
+                                    This shape is linked to the Global Theme Color.
+                                    Selecting a custom color will unlink it.
+                                </p>
+                              `
+                            : `
+                                <p style="font-size:0.75rem; color:#64748b; margin:0.35rem 0 0;">
+                                    This shape currently uses a custom color.
+                                </p>
+                              `
+                    }
+
+                </div>
+
+                ${
+                    !el.isThemeable
+                        ? `
+                            <button
+                                type="button"
+                                class="secondary-btn"
+                                style="margin-top:0.25rem;"
+                                onclick="makeElementThemeable('${el.id}')">
+                                Use Global Theme Color
+                            </button>
+                          `
+                        : ''
+                }
+
+            `;
+
+        }
+
+        else if (
+            el.type ===
+                'photo' ||
+            el.type ===
+                'logo'
+        ) {
+
+            if (
+                el.dataSource ===
+                'database'
+            ) {
+
+                html += `
+
+                    <div class="form-group">
+
+                        <label style="color:#059669; font-weight:bold;">
+                            Database Column Name
+                        </label>
+
+                        <input
+                            type="text"
+                            value="${encodeHTML(el.dbField || 'Photo')}"
+                            oninput="updateSelectedElementProp('dbField', this.value)">
+
+                    </div>
+
+                `;
+
+            }
+
+            else {
+
+                html += `
+
+                    <div class="form-group">
+
+                        <label>
+                            Upload Static Image
+                        </label>
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onchange="handleStaticElementUpload(event, '${el.id}')">
+
+                    </div>
+
+                `;
+
+            }
+
+
+            html += `
+
+                <div style="display:flex; gap:1rem;">
+
+                    <div class="form-group" style="flex:1;">
+                        <label>Width (px)</label>
+                        <input type="number" value="${el.width || 80}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
+                    </div>
+
+                    <div class="form-group" style="flex:1;">
+                        <label>Height (px)</label>
+                        <input type="number" value="${el.height || 80}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+        html += `
+
+            <button
+                class="action-btn"
+                style="background:#dc2626; padding:0.3rem 0.6rem; font-size:0.8rem;"
+                onclick="deleteSelectedElement('${el.id}')">
+
+                Delete Element
+
+            </button>
+
+        `;
+
+
+        panel.innerHTML =
+            html;
+
+    }
+
+
+    /* =========================================================
+       DIRECT TEXT UPDATER (FIXES TYPING FOCUS LOSS)
+       ========================================================= */
+
+    function updateTextContentDirectly(prop, val) {
+        const active = getActiveProject();
+        const el = active.elements.find(item => item.id === selectedElementId);
+        if (!el) return;
+        el[prop] = val;
+        saveState();
+
+        const domEl = document.querySelector(`.card-element[data-id="${selectedElementId}"] span`);
+        if (domEl) {
+            if (el.dataSource === 'database') {
+                const mask = el.content || '{val}';
+                domEl.innerText = mask.includes('{val}') ? mask.replace('{val}', val) : val;
+            } else {
+                domEl.innerText = val;
+            }
+        }
+    }
+
+
+    /* =========================================================
+       MAKE ELEMENT THEMEABLE
+       ========================================================= */
+
+    function makeElementThemeable(
+        id
+    ) {
+
+        const active =
+            getActiveProject();
+
+
+        const el =
+            active.elements.find(
+                item =>
+                    item.id === id
+            );
+
+
+        if (!el)
+            return;
+
+
+        if (
+            el.type !==
+            'shape'
+        )
+            return;
+
+
+        el.isThemeable =
+            true;
+
+
+        el.bg =
+            active.themeColor;
+
+
+        saveState();
+
+
+        selectedElementId =
+            id;
+
+
+        renderTemplateCanvas();
+
+    }
+
+
+    /* =========================================================
+       UPDATE ELEMENT
+       ========================================================= */
+
+    function updateSelectedElementProp(
+        prop,
+        val
+    ) {
+
+        const active =
+            getActiveProject();
+
+
+        const el =
+            active.elements.find(
+                item =>
+                    item.id ===
+                    selectedElementId
+            );
+
+
+        if (!el)
+            return;
+
+
+        el[prop] =
+            val;
+
+
+        if (
+            prop ===
+            'bg'
+        ) {
+
+            el.isThemeable =
+                false;
+
+        }
+
+
+        if (
+            prop ===
+            'dataSource'
+        ) {
+
+            if (
+                val ===
+                'database' &&
+                !el.dbField
+            ) {
+
+                el.dbField =
+                    el.type ===
+                    'text'
+                        ? 'New Field'
+                        : 'Photo';
+
+            }
+
+
+            if (
+                val ===
+                'database' &&
+                el.type ===
+                'text' &&
+                !String(
+                    el.content ||
+                    ''
+                ).includes(
+                    '{val}'
+                )
+            ) {
+
+                el.content =
+                    '{val}';
+
+            }
+
+        }
+
+
+        saveState();
+
+
+        renderTemplateCanvas(
+            false
+        );
+
+
+        renderElementEditor();
+
+    }
+
+
+    /* =========================================================
+       DELETE ELEMENT
+       ========================================================= */
+
+    function deleteSelectedElement(
+        id
+    ) {
+
+        const active =
+            getActiveProject();
+
+
+        active.elements =
+            active.elements.filter(
+                item =>
+                    item.id !==
+                    id
+            );
+
+
+        selectedElementId =
+            null;
+
+
+        saveState();
+
+        renderTemplateCanvas();
+
+    }
+
+
+    /* =========================================================
+       DRAG
+       ========================================================= */
+
+    function makeDraggable(
+        element,
+        elData,
+        scaleFactor,
+        isTemplateCanvas
+    ) {
+
+        let startX =
+            0;
+
+        let startY =
+            0;
+
+
+        element.addEventListener(
+            'pointerdown',
+            pointerDown
+        );
+
+
+        function pointerDown(e) {
+
+            if (
+                e.target.classList.contains(
+                    'resize-handle'
+                )
+            )
+                return;
+
+
+            startX =
+                e.clientX;
+
+
+            startY =
+                e.clientY;
+
+
+            window.addEventListener(
+                'pointermove',
+                pointerMove
+            );
+
+
+            window.addEventListener(
+                'pointerup',
+                pointerUp
+            );
+
+
+            try {
+
+                element.setPointerCapture(
+                    e.pointerId
+                );
+
+            }
+            catch (_) {}
+
+
+            e.stopPropagation();
+
+        }
+
+
+        function pointerMove(e) {
+
+            let dx =
+                (
+                    e.clientX -
+                    startX
+                ) /
+                scaleFactor;
+
+
+            let dy =
+                (
+                    e.clientY -
+                    startY
+                ) /
+                scaleFactor;
+
+
+            startX =
+                e.clientX;
+
+
+            startY =
+                e.clientY;
+
+
+            if (
+                !isTemplateCanvas &&
+                elData.type ===
+                'photo'
+            ) {
+
+                elData.objX =
+                    elData.objX !==
+                    undefined
+                        ? elData.objX
+                        : 50;
+
+
+                elData.objY =
+                    elData.objY !==
+                    undefined
+                        ? elData.objY
+                        : 50;
+
+
+                elData.objX -=
+                    (
+                        dx /
+                        elData.width
+                    ) *
+                    100;
+
+
+                elData.objY -=
+                    (
+                        dy /
+                        elData.height
+                    ) *
+                    100;
+
+
+                elData.objX =
+                    Math.max(
+                        -50,
+                        Math.min(
+                            150,
+                            elData.objX
+                        )
+                    );
+
+
+                elData.objY =
+                    Math.max(
+                        -50,
+                        Math.min(
+                            150,
+                            elData.objY
+                        )
+                    );
+
+
+                const img =
+                    element.querySelector(
+                        'img'
+                    );
+
+
+                if (img) {
+
+                    img.style.objectPosition =
+                        `${elData.objX}% ${elData.objY}%`;
+
+                }
+
+            }
+
+            else {
+
+                elData.x +=
+                    dx;
+
+                elData.y +=
+                    dy;
+
+
+                element.style.left =
+                    elData.x +
+                    'px';
+
+
+                element.style.top =
+                    elData.y +
+                    'px';
+
+            }
+
+        }
+
+
+        function pointerUp() {
+
+            window.removeEventListener(
+                'pointermove',
+                pointerMove
+            );
+
+
+            window.removeEventListener(
+                'pointerup',
+                pointerUp
+            );
+
+
+            saveState();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       DATABASE FIELDS
+       ========================================================= */
+
+    function getDatabaseFields() {
+
+        const active =
+            getActiveProject();
+
+
+        const fields =
+            [];
+
+
+        active.elements.forEach(
+            el => {
+
+                if (
+                    el.dataSource ===
+                    'database' &&
+                    el.dbField
+                ) {
+
+                    if (
+                        !fields.find(
+                            f =>
+                                f.name ===
+                                el.dbField
+                        )
+                    ) {
+
+                        fields.push({
+
+                            name:
+                                el.dbField,
+
+                            type:
+                                (
+                                    el.type ===
+                                    'photo' ||
+                                    el.type ===
+                                    'logo'
+                                )
+                                    ? 'image'
+                                    : 'text'
+
+                        });
+
+                    }
+
+                }
+
+            }
+        );
+
+
+        return fields;
+
+    }
+
+
+    /* =========================================================
+       DATABASE FORM
+       ========================================================= */
+
+    function renderDatabaseForm() {
+
+        const fields =
+            getActiveProject().elements.filter(el => el.dataSource === 'database' && el.dbField);
+
+        const formContainer =
+            document.getElementById(
+                'dynamicDbForm'
+            );
+
+
+        const headContainer =
+            document.getElementById(
+                'dynamicDbHead'
+            );
+
+
+        if (
+            fields.length ===
+            0
+        ) {
+
+            formContainer.innerHTML =
+                `<p style="color:#dc2626; font-weight:bold;">
+                    No Database fields found in the Design tab.
+                </p>`;
+
+
+            headContainer.innerHTML =
+                '';
+
+
+            return;
+
+        }
+
+
+        let html =
+            '<div class="layout-split" style="gap:1rem; align-items:flex-end;">';
+
+
+        getDatabaseFields().forEach(
+            field => {
+
+                const safeId =
+                    field.name.replace(
+                        /[^a-zA-Z0-9]/g,
+                        ''
+                    );
+
+
+                html +=
+                    `<div class="form-group" style="flex:1; min-width:200px;">
+
+                        <label>
+                            ${encodeHTML(field.name)}
+                        </label>`;
+
+
+                if (
+                    field.type ===
+                    'image'
+                ) {
+
+                    html +=
+                        `<input
+                            type="file"
+                            id="db_in_${safeId}"
+                            accept="image/*"
+                            onchange="handleDynamicImageUpload(event, '${encodeHTML(field.name)}')">`;
+
+                }
+
+                else {
+
+                    html +=
+                        `<input
+                            type="text"
+                            id="db_in_${safeId}"
+                            placeholder="Enter ${encodeHTML(field.name)}">`;
+
+                }
+
+
+                html +=
+                    `</div>`;
+
+            }
+        );
+
+
+        html +=
+            '</div>';
+
+
+        formContainer.innerHTML =
+            html;
+
+
+        let thHtml =
+            '<tr>' +
+            '<th style="width:40px; text-align:center;">Print</th>';
+
+
+        getDatabaseFields().forEach(
+            f => {
+
+                thHtml +=
+                    `<th>
+                        ${encodeHTML(f.name)}
+                    </th>`;
+
+            }
+        );
+
+
+        thHtml +=
+            '<th>Action</th></tr>';
+
+
+        headContainer.innerHTML =
+            thHtml;
+
+    }
+
+
+    /* =========================================================
+       DATABASE IMAGE UPLOAD CACHE
+       ========================================================= */
+
+    function handleDynamicImageUpload(
+        event,
+        fieldName
+    ) {
+
+        const file =
+            event.target.files[0];
+
+
+        if (!file) {
+            return;
+        }
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            function(e) {
+
+                dynamicUploadCache[
+                    fieldName
+                ] =
+                    e.target.result;
+
+            };
+
+
+        reader.readAsDataURL(
+            file
+        );
+
+    }
+
+
+    /* =========================================================
+       SAVE RECORD (FIXED ASYNC FILE READER & PRESERVATION)
+       ========================================================= */
+
+    async function saveRecord() {
+
+        const active =
+            getActiveProject();
+
+
+        const fields =
+            getDatabaseFields();
+
+
+        if (
+            fields.length ===
+            0
+        ) {
+
+            alert(
+                "No database fields to add."
+            );
+
+
+            return;
+
+        }
+
+
+        if (
+            !Array.isArray(
+                active.db
+            )
+        )
+            active.db =
+                [];
+
+
+        let recordData =
+            {};
+
+
+        let existingRecord = null;
+        if (editingRecordId !== null) {
+            existingRecord = active.db.find(r => String(r.id) === String(editingRecordId));
+        }
+
+
+        for (const field of fields) {
+
+            const safeId =
+                field.name.replace(
+                    /[^a-zA-Z0-9]/g,
+                    ''
+                );
+
+
+            if (
+                field.type ===
+                'image'
+            ) {
+
+                const fileInput =
+                    document.getElementById(
+                        `db_in_${safeId}`
+                    );
+
+
+                let existingImage =
+                    defaultAvatar;
+
+
+                if (
+                    existingRecord &&
+                    existingRecord.fields &&
+                    existingRecord.fields[field.name]
+                ) {
+
+                    existingImage =
+                        existingRecord.fields[
+                            field.name
+                        ];
+
+                }
+
+
+                let newUploadedImage = null;
+
+
+                if (
+                    fileInput &&
+                    fileInput.files &&
+                    fileInput.files[0]
+                ) {
+
+                    try {
+
+                        newUploadedImage =
+                            await readFileAsDataURL(
+                                fileInput.files[0]
+                            );
+
+                    }
+                    catch (err) {
+
+                        newUploadedImage = null;
+
+                    }
+
+                }
+
+
+                recordData[
+                    field.name
+                ] =
+                    newUploadedImage ||
+                    dynamicUploadCache[field.name] ||
+                    existingImage;
+
+
+                dynamicUploadCache[
+                    field.name
+                ] =
+                    null;
+
+            }
+
+            else {
+
+                const el =
+                    document.getElementById(
+                        `db_in_${safeId}`
+                    );
+
+
+                recordData[
+                    field.name
+                ] =
+                    el
+                        ? el.value
+                        : '';
+
+            }
+
+        }
+
+
+        if (
+            existingRecord
+        ) {
+
+            existingRecord.fields =
+                recordData;
+
+            existingRecord.selectedToPrint =
+                existingRecord.selectedToPrint !== false;
+
+
+            resetDatabaseForm();
+
+        }
+
+        else {
+
+            active.db.push({
+
+                id:
+                    Date.now(),
+
+                selectedToPrint:
+                    true,
+
+                fields:
+                    recordData
+
+            });
+
+        }
+
+
+        try {
+            saveState();
+        }
+        catch (error) {
+            alert('Storage limit reached. Try using smaller images.');
+            return;
+        }
+
+        clearFormInputs();
+
+        renderTable();
+
+
+        document.getElementById(
+            'dbCountBadge'
+        ).innerText =
+            active.db.length;
+
+    }
+
+
+    function readFileAsDataURL(file) {
+
+        return new Promise(
+            (resolve, reject) => {
+
+                const reader =
+                    new FileReader();
+
+                reader.onload =
+                    e =>
+                        resolve(
+                            e.target.result
+                        );
+
+                reader.onerror =
+                    err =>
+                        reject(err);
+
+                reader.readAsDataURL(
+                    file
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       EDIT RECORD
+       ========================================================= */
+
+    function editRecord(
+        id
+    ) {
+
+        const active =
+            getActiveProject();
+
+
+        const record =
+            active.db.find(
+                r =>
+                    r.id ===
+                    id
+            );
+
+
+        if (!record)
+            return;
+
+
+        editingRecordId =
+            id;
+
+
+        const fields =
+            getDatabaseFields();
+
+
+        fields.forEach(
+            field => {
+
+                const safeId =
+                    field.name.replace(
+                        /[^a-zA-Z0-9]/g,
+                        ''
+                    );
+
+
+                const el =
+                    document.getElementById(
+                        `db_in_${safeId}`
+                    );
+
+
+                if (
+                    el &&
+                    field.type !==
+                    'image'
+                ) {
+
+                    el.value =
+                        record.fields[
+                            field.name
+                        ] ||
+                        '';
+
+                }
+
+            }
+        );
+
+
+        document.getElementById(
+            'dbSubmitBtn'
+        ).innerText =
+            "Update Record";
+
+
+        document.getElementById(
+            'dbCancelBtn'
+        ).style.display =
+            "inline-block";
+
+
+        document.getElementById(
+            'dbHeaderNote'
+        ).innerText =
+            `Editing record ID: ${id}`;
+
+
+        window.scrollTo({
+
+            top:
+                0,
+
+            behavior:
+                'smooth'
+
+        });
+
+    }
+
+
+    /* =========================================================
+       PRINT SELECTION
+       ========================================================= */
+
+    function togglePrintSelection(
+        id,
+        checkbox
+    ) {
+
+        const active =
+            getActiveProject();
+
+
+        const record =
+            active.db.find(
+                r =>
+                    r.id ===
+                    id
+            );
+
+
+        if (record) {
+
+            record.selectedToPrint =
+                checkbox.checked;
+
+
+            saveState();
+
+        }
+
+    }
+
+
+    /* =========================================================
+       RESET DATABASE FORM
+       ========================================================= */
+
+    function resetDatabaseForm() {
+
+        editingRecordId =
+            null;
+
+
+        clearFormInputs();
+
+
+        document.getElementById(
+            'dbSubmitBtn'
+        ).innerText =
+            "Add to Database";
+
+
+        document.getElementById(
+            'dbCancelBtn'
+        ).style.display =
+            "none";
+
+
+        document.getElementById(
+            'dbHeaderNote'
+        ).innerText =
+            "Add or edit records for your employee batch. Check the boxes for who you want to print.";
+
+    }
+
+
+    /* =========================================================
+       CLEAR FORM
+       ========================================================= */
+
+    function clearFormInputs() {
+
+        const fields =
+            getDatabaseFields();
+
+
+        fields.forEach(
+            field => {
+
+                const safeId =
+                    field.name.replace(
+                        /[^a-zA-Z0-9]/g,
+                        ''
+                    );
+
+
+                const el =
+                    document.getElementById(
+                        `db_in_${safeId}`
+                    );
+
+
+                if (el)
+                    el.value =
+                        '';
+
+            }
+        );
+
+
+        dynamicUploadCache =
+            {};
+
+    }
+
+
+    /* =========================================================
+       DELETE RECORD
+       ========================================================= */
+
+    function deleteRecord(
+        id
+    ) {
+
+        const active =
+            getActiveProject();
+
+
+        if (
+            editingRecordId ===
+            id
+        )
+            resetDatabaseForm();
+
+
+        active.db =
+            active.db.filter(
+                record =>
+                    record.id !==
+                    id
+            );
+
+
+        saveState();
+
+        renderTable();
+
+
+        document.getElementById(
+            'dbCountBadge'
+        ).innerText =
+            active.db.length;
+
+    }
+
+
+    /* =========================================================
+       DATABASE TABLE
+       ========================================================= */
+
+    function renderTable() {
+
+        const active =
+            getActiveProject();
+
+
+        const tbody =
+            document.getElementById(
+                'dbTableBody'
+            );
+
+
+        const fields =
+            getDatabaseFields();
+
+
+        tbody.innerHTML =
+            '';
+
+
+        if (
+            !active.db ||
+            active.db.length ===
+            0 ||
+            fields.length ===
+            0
+        ) {
+
+            tbody.innerHTML =
+                `<tr>
+
+                    <td
+                        colspan="${fields.length + 2}"
+                        style="text-align:center; color:#6b7280;">
+
+                        No records found.
+
+                    </td>
+
+                </tr>`;
+
+
+            return;
+
+        }
+
+
+        active.db.forEach(
+            record => {
+
+                const tr =
+                    document.createElement(
+                        'tr'
+                    );
+
+
+                let tdHtml =
+                    `<td style="text-align:center;">
+
+                        <input
+                            type="checkbox"
+                            ${
+                                record.selectedToPrint !== false
+                                    ? 'checked'
+                                    : ''
+                            }
+                            onchange="togglePrintSelection(${record.id}, this)">
+
+                    </td>`;
+
+
+                fields.forEach(
+                    field => {
+
+                        const val =
+                            record.fields[
+                                field.name
+                            ];
+
+
+                        if (
+                            field.type ===
+                            'image'
+                        ) {
+
+                            tdHtml +=
+                                `<td>
+
+                                    <img
+                                        src="${val || defaultAvatar}"
+                                        class="db-thumbnail">
+
+                                </td>`;
+
+                        }
+
+                        else {
+
+                            tdHtml +=
+                                `<td>
+                                    ${encodeHTML(val || '')}
+                                </td>`;
+
+                        }
+
+                    }
+                );
+
+
+                tdHtml +=
+                    `<td>
+
+                        <button
+                            onclick="editRecord(${record.id})"
+                            style="color:#2563eb; border:none; background:none; cursor:pointer; margin-right:0.5rem; font-weight:500;">
+
+                            Edit
+
+                        </button>
+
+                        <button
+                            onclick="deleteRecord(${record.id})"
+                            style="color:red; border:none; background:none; cursor:pointer; font-weight:500;">
+
+                            Delete
+
+                        </button>
+
+                    </td>`;
+
+
+                tr.innerHTML =
+                    tdHtml;
+
+
+                tbody.appendChild(
+                    tr
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       GENERATE CARDS
+       ========================================================= */
+
+    function generateCards() {
+
+        const active =
+            getActiveProject();
+
+
+        const grid =
+            document.getElementById(
+                'printGrid'
+            );
+
+
+        grid.innerHTML =
+            '';
+
+
+        generatedElements =
+            [];
+
+
+        const helperText =
+            document.getElementById(
+                'printHelperText'
+            );
+
+
+        const databaseRecords =
+            Array.isArray(active.db)
+                ? active.db
+                : [];
+
+
+        const recordsToPrint =
+            databaseRecords.filter(
+                record =>
+                    record.selectedToPrint !==
+                    false
+            );
+
+
+        if (
+            recordsToPrint.length ===
+            0
+        ) {
+
+            grid.innerHTML =
+                `<p style="color:#6b7280;">
+                    No records selected for printing.
+                    Check boxes in the Database tab.
+                </p>`;
+
+
+            helperText.innerText =
+                '';
+
+
+            return;
+
+        }
+
+
+        recordsToPrint.forEach(
+            (
+                record,
+                index
+            ) => {
+
+                let cardElements =
+                    JSON.parse(
+                        JSON.stringify(
+                            active.elements
+                        )
+                    );
+
+
+                cardElements.forEach(
+                    el => {
+
+                        el.uniqueId =
+                            el.id +
+                            '_' +
+                            index +
+                            '_' +
+                            Date.now();
+
+
+                        generatedElements.push(
+                            el
+                        );
+
+                    }
+                );
+
+
+                const displayLabel =
+                    record.fields &&
+                    (
+                        record.fields['Full Name'] ||
+                        record.fields['Name']
+                    )
+                        ? (
+                            record.fields['Full Name'] ||
+                            record.fields['Name']
+                        )
+                        : `Person ${index + 1}`;
+
+
+                /* =================================================
+                   FRONT
+                   ================================================= */
+
+                const frontWrapper =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                frontWrapper.className =
+                    'card-container-wrapper';
+
+
+                const frontCard =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                frontCard.className =
+                    'id-card';
+
+
+                frontCard.style.setProperty(
+                    'background-color',
+                    'white',
+                    'important'
+                );
+
+
+                if (
+                    active.bgImage
+                ) {
+
+                    frontCard.style.setProperty(
+                        'background-image',
+                        `url("${active.bgImage}")`,
+                        'important'
+                    );
+
+                }
+
+                else {
+
+                    frontCard.style.setProperty(
+                        'background-image',
+                        'none',
+                        'important'
+                    );
+
+                }
+
+
+                cardElements
+                    .filter(
+                        el =>
+                            el.side ===
+                            'front'
+                    )
+                    .forEach(
+                        el => {
+
+                            frontCard.appendChild(
+                                createDOMElement(
+                                    el,
+                                    record,
+                                    1.5,
+                                    false
+                                )
+                            );
+
+                        }
+                    );
+
+
+                frontWrapper.appendChild(
+                    frontCard
+                );
+
+
+                const fLabel =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                fLabel.className =
+                    'card-label';
+
+
+                fLabel.innerText =
+                    `Card ${index + 1} (Front): ${displayLabel}`;
+
+
+                frontWrapper.appendChild(
+                    fLabel
+                );
+
+
+                grid.appendChild(
+                    frontWrapper
+                );
+
+
+                /* =================================================
+                   BACK
+                   ================================================= */
+
+                if (
+                    active.format ===
+                    'dual'
+                ) {
+
+                    const backWrapper =
+                        document.createElement(
+                            'div'
+                        );
+
+
+                    backWrapper.className =
+                        'card-container-wrapper';
+
+
+                    const backCard =
+                        document.createElement(
+                            'div'
+                        );
+
+
+                    backCard.className =
+                        'id-card';
+
+
+                    backCard.style.setProperty(
+                        'background-color',
+                        'white',
+                        'important'
+                    );
+
+
+                    if (
+                        active.bgImage
+                    ) {
+
+                        backCard.style.setProperty(
+                            'background-image',
+                            `url("${active.bgImage}")`,
+                            'important'
+                        );
+
+                    }
+
+                    else {
+
+                        backCard.style.setProperty(
+                            'background-image',
+                            'none',
+                            'important'
+                        );
+
+                    }
+
+
+                    cardElements
+                        .filter(
+                            el =>
+                                el.side ===
+                                'back'
+                        )
+                        .forEach(
+                            el => {
+
+                                backCard.appendChild(
+                                    createDOMElement(
+                                        el,
+                                        record,
+                                        1.5,
+                                        false
+                                    )
+                                );
+
+                            }
+                        );
+
+
+                    backWrapper.appendChild(
+                        backCard
+                    );
+
+
+                    const bLabel =
+                        document.createElement(
+                            'div'
+                        );
+
+
+                    bLabel.className =
+                        'card-label';
+
+
+                    bLabel.innerText =
+                        `Card ${index + 1} (Back): ${displayLabel}`;
+
+
+                    backWrapper.appendChild(
+                        bLabel
+                    );
+
+
+                    grid.appendChild(
+                        backWrapper
+                    );
+
+                }
+
+            }
+        );
+
+
+        helperText.innerText =
+            active.format ===
+            'dual'
+                ? `Generated ${recordsToPrint.length * 2} pages (Front and Back).`
+                : `Generated ${recordsToPrint.length} pages.`;
+
+    }
+
+
+    /* =========================================================
+       PRINT (FIXED: PRESERVES PRINT TAB EDITS)
+       ========================================================= */
+
+    function printCards() {
+
+        requestAnimationFrame(
+            function() {
+
+                setTimeout(
+                    function() {
+
+                        window.print();
+
+                    },
+                    150
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       INITIALIZE
+       ========================================================= */
+
+    const initialProject =
+        getActiveProject();
+
+
+    document.documentElement.style.setProperty(
+        '--primary',
+        initialProject.themeColor
+    );
+
+
+    renderProjectSelector();
+
+
+    renderTemplateCanvas();
+
+</script>
+
+</body>
+</html>
