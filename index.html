@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Entity ID Card Designer</title>
 
+    <!-- Barcode & QR Code Libraries via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
     <style>
         :root {
             --primary: #2563eb;
@@ -300,7 +304,7 @@
             overflow: hidden;
         }
 
-        /* Helper to reveal element boxes when hovering over the card design */
+        /* Hover outline to easily see elements against banners */
         .id-card:hover .card-element:not(.selected) {
             outline: 1px dashed rgba(0, 0, 0, 0.35);
         }
@@ -356,6 +360,14 @@
             font-weight: bold;
             display: flex;
             align-items: center;
+            overflow: hidden;
+        }
+
+        .el-barcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
             overflow: hidden;
         }
 
@@ -773,6 +785,12 @@
 
                         <button class="secondary-btn"
                                 style="width:100%;"
+                                onclick="addElement('barcode','front')">
+                            + Barcode / QR
+                        </button>
+
+                        <button class="secondary-btn"
+                                style="width:100%;"
                                 onclick="addElement('photo','front')">
                             + Add Photo Area
                         </button>
@@ -810,6 +828,12 @@
                                 style="width:100%;"
                                 onclick="addElement('text','back')">
                             + Text Label
+                        </button>
+
+                        <button class="secondary-btn"
+                                style="width:100%;"
+                                onclick="addElement('barcode','back')">
+                            + Barcode / QR
                         </button>
 
                         <button class="secondary-btn"
@@ -1013,8 +1037,7 @@
                 { id: 'f_org', side: 'front', type: 'text', dataSource: 'static', content: 'COMPANY NAME', x: 15, y: 20, width: 180, height: 30, fontSize: '15px', color: '#ffffff', align: 'center' },
                 { id: 'f_photo', side: 'front', type: 'photo', dataSource: 'database', dbField: 'Photo', x: 62, y: 85, width: 80, height: 80 },
                 { id: 'f_name', side: 'front', type: 'text', dataSource: 'database', dbField: 'Full Name', content: '{val}', x: 15, y: 190, width: 180, height: 30, fontSize: '18px', color: '#1f2937', align: 'center' },
-                { id: 'f_role', side: 'front', type: 'text', dataSource: 'database', dbField: 'Role', content: '{val}', x: 15, y: 220, width: 180, height: 25, fontSize: '13px', color: '#6b7280', align: 'center' },
-                { id: 'f_num', side: 'front', type: 'text', dataSource: 'database', dbField: 'ID Number', content: 'ID: {val}', x: 15, y: 280, width: 180, height: 25, fontSize: '13px', color: '#374151', align: 'center' },
+                { id: 'f_barcode', side: 'front', type: 'barcode', dataSource: 'database', dbField: 'ID Number', content: '12345678', barcodeType: 'CODE128', x: 20, y: 240, width: 160, height: 50 },
                 { id: 'f_footer', side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 310, width: 220, height: 20, bg: '#2563eb', isThemeable: true }
             ],
             db: []
@@ -1341,6 +1364,13 @@
             newEl.fontSize = '14px';
             newEl.color = '#1f2937';
             newEl.align = 'center';
+        } else if (type === 'barcode') {
+            newEl.dataSource = 'database';
+            newEl.dbField = 'ID Number';
+            newEl.content = '12345678';
+            newEl.barcodeType = 'CODE128';
+            newEl.width = 160;
+            newEl.height = 50;
         } else if (type === 'photo') {
             newEl.dataSource = 'database';
             newEl.dbField = 'Photo';
@@ -1443,9 +1473,7 @@
             div.style.width = (elData.width || 150) + 'px';
             div.style.height = (elData.height || 30) + 'px';
 
-            // Box position (elData.x) is never shifted. Only text alignment inside changes.
             div.style.transform = 'none';
-
             const alignment = elData.align || 'center';
 
             if (alignment === 'left') {
@@ -1459,7 +1487,6 @@
                 div.style.textAlign = 'center';
             }
 
-            // Optional Text Background Color
             if (elData.textBg) {
                 div.style.backgroundColor = elData.textBg;
                 div.style.borderRadius = '4px';
@@ -1479,6 +1506,69 @@
             span.innerText = displayText;
             span.style.setProperty('color', elData.color || '#000000', 'important');
             div.appendChild(span);
+        } else if (elData.type === 'barcode') {
+            div.className += ' el-barcode';
+            div.style.width = (elData.width || 140) + 'px';
+            div.style.height = (elData.height || 50) + 'px';
+
+            let bVal = '12345678';
+            if (elData.dataSource === 'database') {
+                bVal = recordData && recordData.fields ? (recordData.fields[elData.dbField] || '12345678') : `[${elData.dbField || 'ID'}]`;
+            } else {
+                bVal = elData.content || '12345678';
+            }
+
+            const bType = elData.barcodeType || 'CODE128';
+
+            if (bType === 'QR') {
+                const qrContainer = document.createElement('div');
+                qrContainer.style.width = '100%';
+                qrContainer.style.height = '100%';
+                qrContainer.style.display = 'flex';
+                qrContainer.style.justifyContent = 'center';
+                qrContainer.style.alignItems = 'center';
+                div.appendChild(qrContainer);
+
+                setTimeout(() => {
+                    qrContainer.innerHTML = '';
+                    try {
+                        new QRCode(qrContainer, {
+                            text: bVal,
+                            width: elData.width || 50,
+                            height: elData.height || 50,
+                            colorDark : "#000000",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.M
+                        });
+                        const qrImg = qrContainer.querySelector('img, canvas');
+                        if (qrImg) {
+                            qrImg.style.width = '100%';
+                            qrImg.style.height = '100%';
+                            qrImg.style.objectFit = 'contain';
+                        }
+                    } catch(e) {}
+                }, 10);
+            } else {
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.style.width = '100%';
+                svg.style.height = '100%';
+                div.appendChild(svg);
+
+                setTimeout(() => {
+                    try {
+                        JsBarcode(svg, bVal, {
+                            format: bType,
+                            displayValue: true,
+                            fontSize: 9,
+                            margin: 2,
+                            width: 1.2,
+                            height: (elData.height || 50) - 15
+                        });
+                    } catch(e) {
+                        svg.innerHTML = `<text x="5" y="25" font-size="9" fill="red">Invalid Barcode</text>`;
+                    }
+                }, 10);
+            }
         } else if (elData.type === 'photo' || elData.type === 'logo') {
             let imgSrc = elData.src;
             if (elData.dataSource === 'database') {
@@ -1535,30 +1625,24 @@
             let startY = e.clientY;
             let startW = elData.width || 80;
             let startH = elData.height || 80;
-            let startFontSize = parseFloat(elData.fontSize) || 14;
 
             function doResize(ev) {
                 let dx = (ev.clientX - startX) / scaleFactor;
                 let dy = (ev.clientY - startY) / scaleFactor;
 
-                if (elData.type === 'text') {
-                    elData.width = Math.max(20, startW + dx);
-                    elData.height = Math.max(15, startH + dy);
-                    div.style.width = elData.width + 'px';
-                    div.style.height = elData.height + 'px';
-                } else {
-                    elData.width = Math.max(15, startW + dx);
-                    elData.height = Math.max(10, startH + dy);
-                    div.style.width = elData.width + 'px';
-                    div.style.height = elData.height + 'px';
-                }
+                elData.width = Math.max(25, startW + dx);
+                elData.height = Math.max(15, startH + dy);
+                div.style.width = elData.width + 'px';
+                div.style.height = elData.height + 'px';
             }
 
             function stopResize() {
                 window.removeEventListener('pointermove', doResize);
                 window.removeEventListener('pointerup', stopResize);
                 saveState();
-                if (isTemplateCanvas) renderElementEditor();
+                if (isTemplateCanvas) {
+                    renderTemplateCanvas();
+                }
             }
 
             window.addEventListener('pointermove', doResize);
@@ -1707,6 +1791,45 @@
                     </div>
                 </div>
             `;
+        } else if (el.type === 'barcode') {
+            if (el.dataSource === 'database') {
+                html += `
+                    <div class="form-group">
+                        <label style="color:#059669; font-weight:bold;">Database Column Name</label>
+                        <input type="text" value="${encodeHTML(el.dbField || 'ID Number')}" oninput="updateTextContentDirectly('dbField', this.value)">
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="form-group">
+                        <label>Static Barcode Value</label>
+                        <input type="text" value="${encodeHTML(el.content || '12345678')}" oninput="updateTextContentDirectly('content', this.value)">
+                    </div>
+                `;
+            }
+
+            const currentBType = el.barcodeType || 'CODE128';
+
+            html += `
+                <div class="form-group">
+                    <label>Barcode Type</label>
+                    <select onchange="updateSelectedElementProp('barcodeType', this.value)">
+                        <option value="CODE128" ${currentBType === 'CODE128' ? 'selected' : ''}>Code 128 (Standard Barcode)</option>
+                        <option value="QR" ${currentBType === 'QR' ? 'selected' : ''}>QR Code</option>
+                        <option value="CODE39" ${currentBType === 'CODE39' ? 'selected' : ''}>Code 39</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:1rem;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Width (px)</label>
+                        <input type="number" value="${el.width || 140}" oninput="updateSelectedElementProp('width', parseInt(this.value))">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Height (px)</label>
+                        <input type="number" value="${el.height || 50}" oninput="updateSelectedElementProp('height', parseInt(this.value))">
+                    </div>
+                </div>
+            `;
         } else if (el.type === 'shape') {
             html += `
                 <div style="display:flex; gap:1rem;">
@@ -1818,7 +1941,7 @@
 
         if (prop === 'dataSource') {
             if (val === 'database' && !el.dbField) {
-                el.dbField = el.type === 'text' ? 'New Field' : 'Photo';
+                el.dbField = el.type === 'text' ? 'New Field' : (el.type === 'barcode' ? 'ID Number' : 'Photo');
             }
             if (val === 'database' && el.type === 'text' && !String(el.content || '').includes('{val}')) {
                 el.content = '{val}';
