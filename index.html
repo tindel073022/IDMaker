@@ -1181,6 +1181,9 @@
         document.getElementById(tabId).classList.add('active');
         if (clickedButton) clickedButton.classList.add('active');
 
+        // Ensure print styles update immediately when switching to print tab
+        updatePrintStyles();
+
         if (tabId === 'database') {
             renderDatabaseForm();
             renderTable();
@@ -1247,7 +1250,7 @@
                     }
                     html, body {
                         width: ${w} !important;
-                        height: auto !important;
+                        height: 100% !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: white !important;
@@ -1255,7 +1258,7 @@
                     }
                     .container {
                         width: ${w} !important;
-                        height: auto !important;
+                        height: 100% !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: transparent !important;
@@ -1265,7 +1268,7 @@
                     #print {
                         display: block !important;
                         width: ${w} !important;
-                        height: auto !important;
+                        height: 100% !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: transparent !important;
@@ -1273,7 +1276,7 @@
                     .print-grid {
                         display: block !important;
                         width: ${w} !important;
-                        height: auto !important;
+                        height: 100% !important;
                         margin: 0 !important;
                         padding: 0 !important;
                     }
@@ -1292,7 +1295,7 @@
                         break-after: page !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
-                        overflow: hidden !important;
+                        overflow: visible !important;
                     }
                     .card-container-wrapper .id-card {
                         width: ${w} !important;
