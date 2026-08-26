@@ -1438,13 +1438,17 @@
             div.style.width = (elData.width || 150) + 'px';
             div.style.height = (elData.height || 30) + 'px';
 
+            // FIXED TEXT ALIGNMENT & TRANSFORM RESTORED FOR CONSISTENCY
             if (elData.align === 'center') {
+                div.style.transform = 'translateX(-50%)';
                 div.style.justifyContent = 'center';
                 div.style.textAlign = 'center';
             } else if (elData.align === 'right') {
+                div.style.transform = 'translateX(-100%)';
                 div.style.justifyContent = 'flex-end';
                 div.style.textAlign = 'right';
             } else {
+                div.style.transform = 'none';
                 div.style.justifyContent = 'flex-start';
                 div.style.textAlign = 'left';
             }
