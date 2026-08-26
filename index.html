@@ -1306,6 +1306,12 @@
                         border-radius: 0 !important;
                         box-shadow: none !important;
                     }
+                    /* Automatically rotate back card 180 degrees during print if landscape to account for printer hardware flip */
+                    ${isLandscape ? `
+                    .back-card-wrapper .id-card {
+                        transform: rotate(180deg) !important;
+                    }
+                    ` : ''}
                     .project-bar, .tabs, #design, #database, .print-header-controls, .card-label, #printPhotoTools, .resize-handle {
                         display: none !important;
                     }
@@ -2411,7 +2417,7 @@
 
             // FRONT
             const frontWrapper = document.createElement('div');
-            frontWrapper.className = wrapperClass;
+            frontWrapper.className = wrapperClass + ' front-card-wrapper';
 
             const frontCard = document.createElement('div');
             frontCard.className = 'id-card';
@@ -2439,7 +2445,7 @@
             // BACK
             if (active.format === 'dual') {
                 const backWrapper = document.createElement('div');
-                backWrapper.className = wrapperClass;
+                backWrapper.className = wrapperClass + ' back-card-wrapper';
 
                 const backCard = document.createElement('div');
                 backCard.className = 'id-card';
