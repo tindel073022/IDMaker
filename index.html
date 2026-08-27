@@ -420,8 +420,11 @@
         .el-text {
             font-weight: bold;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             overflow: hidden;
+            white-space: pre-wrap;
+            word-break: break-word;
+            user-select: text;
         }
 
         /* Text-box editing mode in the Design Layout */
@@ -703,31 +706,79 @@
 
                 <hr style="border:0; border-top:1px solid var(--border); margin:1.5rem 0;">
 
+                <!-- BACKGROUND COLOR OPTIONS -->
                 <label style="font-weight:bold; margin-bottom:0.75rem;">
-                    Card Background Image:
+                    Card Background Colors:
                 </label>
 
+                <div class="form-group">
+                    <label>Front Background Color</label>
+                    <input type="color"
+                           id="frontBgColorInput"
+                           value="#ffffff"
+                           oninput="updateFrontBgColor(this.value)">
+                </div>
+
+                <div class="form-group" id="backBgColorGroup" style="display:none;">
+                    <label>Back Background Color</label>
+                    <input type="color"
+                           id="backBgColorInput"
+                           value="#ffffff"
+                           oninput="updateBackBgColor(this.value)">
+                </div>
+
+                <hr style="border:0; border-top:1px solid var(--border); margin:1.5rem 0;">
+
+                <!-- BACKGROUND IMAGE OPTIONS -->
+                <label style="font-weight:bold; margin-bottom:0.75rem;">
+                    Front Card Background Image:
+                </label>
                 <div style="display:flex; gap:1rem; margin-bottom:1rem;">
                     <div class="form-group" style="flex:1;">
                         <button class="secondary-btn"
                                 style="width:100%; margin-bottom:0;"
-                                onclick="document.getElementById('uploadBgInput').click()">
-                            Upload BG Image
+                                onclick="document.getElementById('uploadFrontBgInput').click()">
+                            Upload Front BG
                         </button>
-
                         <input type="file"
-                               id="uploadBgInput"
+                               id="uploadFrontBgInput"
                                accept="image/*"
                                style="display:none"
-                               onchange="handleBgImageUpload(event)">
+                               onchange="handleBgImageUpload(event, 'front')">
                     </div>
-
                     <div style="flex:1;">
                         <button class="secondary-btn"
                                 style="background:#dc2626; width:100%; margin-bottom:0;"
-                                onclick="removeBgImage()">
-                            Remove BG Image
+                                onclick="removeBgImage('front')">
+                            Remove Front BG
                         </button>
+                    </div>
+                </div>
+
+                <div id="backBgImageControls" style="display:none;">
+                    <label style="font-weight:bold; margin-bottom:0.75rem;">
+                        Back Card Background Image:
+                    </label>
+                    <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+                        <div class="form-group" style="flex:1;">
+                            <button class="secondary-btn"
+                                    style="width:100%; margin-bottom:0;"
+                                    onclick="document.getElementById('uploadBackBgInput').click()">
+                                Upload Back BG
+                            </button>
+                            <input type="file"
+                                   id="uploadBackBgInput"
+                                   accept="image/*"
+                                   style="display:none"
+                                   onchange="handleBgImageUpload(event, 'back')">
+                        </div>
+                        <div style="flex:1;">
+                            <button class="secondary-btn"
+                                    style="background:#dc2626; width:100%; margin-bottom:0;"
+                                    onclick="removeBgImage('back')">
+                                Remove Back BG
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1011,7 +1062,10 @@
             format: 'single',
             orientation: 'portrait',
             themeColor: '#2563eb',
-            bgImage: '',
+            frontBgColor: '#ffffff',
+            backBgColor: '#ffffff',
+            frontBgImage: '',
+            backBgImage: '',
             elements: [
                 { id: 'f_banner', side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 0, width: 220, height: 65, bg: '#2563eb', isThemeable: true },
                 { id: 'f_org', side: 'front', type: 'text', dataSource: 'static', content: 'COMPANY NAME', x: 15, y: 20, width: 180, height: 30, fontSize: '15px', color: '#ffffff', align: 'center' },
@@ -1165,6 +1219,16 @@
 
     function initEntitySession() {
         if (!currentEntity) {
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key && key.startsWith('id_maker_store_')) {
+                    currentEntity = key.replace('id_maker_store_', '');
+                    localStorage.setItem('id_maker_active_entity', currentEntity);
+                    break;
+                }
+            }
+        }
+        if (!currentEntity) {
             document.getElementById('entityModal').style.display = 'flex';
         } else {
             document.getElementById('entityModal').style.display = 'none';
@@ -1235,9 +1299,19 @@
         if (!Array.isArray(p.elements)) p.elements = [];
         if (!Array.isArray(p.db)) p.db = [];
         if (!p.themeColor) p.themeColor = '#2563eb';
+        if (!p.frontBgColor) p.frontBgColor = '#ffffff';
+        if (!p.backBgColor) p.backBgColor = '#ffffff';
+
+        if (p.bgImage !== undefined && p.frontBgImage === undefined) {
+            p.frontBgImage = p.bgImage;
+            p.backBgImage = p.bgImage;
+            delete p.bgImage;
+        }
+        if (typeof p.frontBgImage !== 'string') p.frontBgImage = '';
+        if (typeof p.backBgImage !== 'string') p.backBgImage = '';
+
         if (!p.format) p.format = 'single';
         if (!p.orientation) p.orientation = 'portrait';
-        if (typeof p.bgImage !== 'string') p.bgImage = '';
 
         p.elements.forEach(el => {
             if (el.type === 'shape' && el.isThemeable === true) {
@@ -1317,6 +1391,8 @@
         document.getElementById('cardFormat').value = active.format;
         document.getElementById('cardOrientation').value = active.orientation;
         document.getElementById('themeColor').value = active.themeColor;
+        document.getElementById('frontBgColorInput').value = active.frontBgColor || '#ffffff';
+        document.getElementById('backBgColorInput').value = active.backBgColor || '#ffffff';
         document.getElementById('dbProjectNameDisplay').innerText = active.name;
         document.getElementById('printProjectNameDisplay').innerText = active.name;
         document.getElementById('dbCountBadge').innerText = active.db.length;
@@ -1355,7 +1431,10 @@
             format: 'single',
             orientation: 'portrait',
             themeColor: '#059669',
-            bgImage: '',
+            frontBgColor: '#ffffff',
+            backBgColor: '#ffffff',
+            frontBgImage: '',
+            backBgImage: '',
             elements: [
                 { id: 'f_banner_' + timestamp, side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 0, width: 220, height: 65, bg: '#059669', isThemeable: true },
                 { id: 'f_name_' + timestamp, side: 'front', type: 'text', dataSource: 'database', dbField: 'Full Name', content: '{val}', x: 15, y: 150, width: 180, height: 30, fontSize: '18px', color: '#1f2937', align: 'center' }
@@ -1374,6 +1453,70 @@
         active.name = val;
         saveStateInternal();
         renderProjectSelector();
+    }
+
+    function updateFrontBgColor(val) {
+        const active = getActiveProject();
+        if (active.frontBgColor === val) return;
+        pushHistory();
+        active.frontBgColor = val;
+        saveStateInternal();
+        applyBackgroundsToCanvases();
+        if (document.getElementById('print').classList.contains('active')) {
+            generateCards();
+        }
+    }
+
+    function updateBackBgColor(val) {
+        const active = getActiveProject();
+        if (active.backBgColor === val) return;
+        pushHistory();
+        active.backBgColor = val;
+        saveStateInternal();
+        applyBackgroundsToCanvases();
+        if (document.getElementById('print').classList.contains('active')) {
+            generateCards();
+        }
+    }
+
+    function handleBgImageUpload(event, side) {
+        const file = event.target.files[0];
+        const active = getActiveProject();
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            pushHistory();
+            if (side === 'front') {
+                active.frontBgImage = e.target.result;
+            } else {
+                active.backBgImage = e.target.result;
+            }
+            saveStateInternal();
+            applyBackgroundsToCanvases();
+            if (document.getElementById('print').classList.contains('active')) {
+                generateCards();
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeBgImage(side) {
+        const active = getActiveProject();
+        if (side === 'front') {
+            if (!active.frontBgImage) return;
+            pushHistory();
+            active.frontBgImage = '';
+        } else {
+            if (!active.backBgImage) return;
+            pushHistory();
+            active.backBgImage = '';
+        }
+        saveStateInternal();
+        applyBackgroundsToCanvases();
+        if (document.getElementById('print').classList.contains('active')) {
+            generateCards();
+        }
     }
 
     function encodeHTML(str) {
@@ -1541,8 +1684,11 @@
 
     function updateFormatUI() {
         const active = getActiveProject();
-        document.getElementById('backCanvasContainer').style.display = active.format === 'dual' ? 'flex' : 'none';
-        document.getElementById('addBackControls').style.display = active.format === 'dual' ? 'block' : 'none';
+        const isDual = active.format === 'dual';
+        document.getElementById('backCanvasContainer').style.display = isDual ? 'flex' : 'none';
+        document.getElementById('addBackControls').style.display = isDual ? 'block' : 'none';
+        document.getElementById('backBgColorGroup').style.display = isDual ? 'block' : 'none';
+        document.getElementById('backBgImageControls').style.display = isDual ? 'block' : 'none';
     }
 
     function updateThemeColor() {
@@ -1571,60 +1717,42 @@
         }
     }
 
-    function handleBgImageUpload(event) {
-        const file = event.target.files[0];
-        const active = getActiveProject();
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            pushHistory();
-            active.bgImage = e.target.result;
-            saveStateInternal();
-            applyBackgroundsToCanvases();
-            if (document.getElementById('print').classList.contains('active')) {
-                generateCards();
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function removeBgImage() {
-        const active = getActiveProject();
-        if (!active.bgImage) return;
-        pushHistory();
-        active.bgImage = '';
-        saveStateInternal();
-        applyBackgroundsToCanvases();
-        if (document.getElementById('print').classList.contains('active')) {
-            generateCards();
-        }
-    }
-
     function applyBackgroundsToCanvases() {
         const active = getActiveProject();
         const front = document.getElementById('templateCanvasFront');
         const back = document.getElementById('templateCanvasBack');
-        const backgroundImage = active.bgImage || '';
         const isLandscape = active.orientation === 'landscape';
 
         const cardWidth = isLandscape ? '3.375in' : '2.125in';
         const cardHeight = isLandscape ? '2.125in' : '3.375in';
 
-        [front, back].forEach(card => {
-            if (!card) return;
-            card.style.setProperty('width', cardWidth, 'important');
-            card.style.setProperty('height', cardHeight, 'important');
-            card.style.setProperty('background-color', 'white', 'important');
-            if (backgroundImage) {
-                card.style.setProperty('background-image', `url("${backgroundImage}")`, 'important');
+        if (front) {
+            front.style.setProperty('width', cardWidth, 'important');
+            front.style.setProperty('height', cardHeight, 'important');
+            front.style.setProperty('background-color', active.frontBgColor || '#ffffff', 'important');
+            if (active.frontBgImage) {
+                front.style.setProperty('background-image', `url("${active.frontBgImage}")`, 'important');
             } else {
-                card.style.setProperty('background-image', 'none', 'important');
+                front.style.setProperty('background-image', 'none', 'important');
             }
-            card.style.backgroundSize = 'cover';
-            card.style.backgroundPosition = 'center';
-            card.style.backgroundRepeat = 'no-repeat';
-        });
+            front.style.backgroundSize = 'cover';
+            front.style.backgroundPosition = 'center';
+            front.style.backgroundRepeat = 'no-repeat';
+        }
+
+        if (back) {
+            back.style.setProperty('width', cardWidth, 'important');
+            back.style.setProperty('height', cardHeight, 'important');
+            back.style.setProperty('background-color', active.backBgColor || '#ffffff', 'important');
+            if (active.backBgImage) {
+                back.style.setProperty('background-image', `url("${active.backBgImage}")`, 'important');
+            } else {
+                back.style.setProperty('background-image', 'none', 'important');
+            }
+            back.style.backgroundSize = 'cover';
+            back.style.backgroundPosition = 'center';
+            back.style.backgroundRepeat = 'no-repeat';
+        }
     }
 
     function addElement(type, side) {
@@ -2753,13 +2881,16 @@
             frontCard.className = 'id-card';
             frontCard.style.setProperty('width', cardWidth, 'important');
             frontCard.style.setProperty('height', cardHeight, 'important');
-            frontCard.style.setProperty('background-color', 'white', 'important');
+            frontCard.style.setProperty('background-color', active.frontBgColor || '#ffffff', 'important');
 
-            if (active.bgImage) {
-                frontCard.style.setProperty('background-image', `url("${active.bgImage}")`, 'important');
+            if (active.frontBgImage) {
+                frontCard.style.setProperty('background-image', `url("${active.frontBgImage}")`, 'important');
             } else {
                 frontCard.style.setProperty('background-image', 'none', 'important');
             }
+            frontCard.style.backgroundSize = 'cover';
+            frontCard.style.backgroundPosition = 'center';
+            frontCard.style.backgroundRepeat = 'no-repeat';
 
             cardElements.filter(el => el.side === 'front').forEach(el => {
                 frontCard.appendChild(createDOMElement(el, record, 1.5, false));
@@ -2781,13 +2912,16 @@
                 backCard.className = 'id-card';
                 backCard.style.setProperty('width', cardWidth, 'important');
                 backCard.style.setProperty('height', cardHeight, 'important');
-                backCard.style.setProperty('background-color', 'white', 'important');
+                backCard.style.setProperty('background-color', active.backBgColor || '#ffffff', 'important');
 
-                if (active.bgImage) {
-                    backCard.style.setProperty('background-image', `url("${active.bgImage}")`, 'important');
+                if (active.backBgImage) {
+                    backCard.style.setProperty('background-image', `url("${active.backBgImage}")`, 'important');
                 } else {
                     backCard.style.setProperty('background-image', 'none', 'important');
                 }
+                backCard.style.backgroundSize = 'cover';
+                backCard.style.backgroundPosition = 'center';
+                backCard.style.backgroundRepeat = 'no-repeat';
 
                 cardElements.filter(el => el.side === 'back').forEach(el => {
                     backCard.appendChild(createDOMElement(el, record, 1.5, false));
