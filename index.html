@@ -525,29 +525,63 @@
 
 <!-- FAQ & GUIDE MODAL -->
 <div id="faqModal" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.85); z-index:9999; justify-content:center; align-items:center; padding:1rem;">
-    <div style="background:white; padding:2rem; border-radius:12px; width:100%; max-width:650px; max-height:85vh; overflow-y:auto; text-align:left; box-shadow:0 20px 25px -5px rgb(0 0 0 / 0.2);">
+    <div style="background:white; padding:2rem; border-radius:12px; width:100%; max-width:700px; max-height:85vh; overflow-y:auto; text-align:left; box-shadow:0 20px 25px -5px rgb(0 0 0 / 0.2);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid #e5e7eb; padding-bottom:0.75rem;">
-            <h2 style="margin:0; color:#1e293b;">❓ ID Maker FAQ & User Guide</h2>
+            <h2 style="margin:0; color:#1e293b;">📖 Complete Step-by-Step ID Maker Master Guide</h2>
             <button onclick="closeFaqModal()" style="background:none; border:none; font-size:1.75rem; cursor:pointer; color:#64748b; font-weight:bold;">&times;</button>
         </div>
         
         <div style="color:#334155; font-size:0.92rem; line-height:1.6;">
-            <h3 style="color:#2563eb; margin-top:1rem;">📖 How to Use the App</h3>
+            <h3 style="color:#2563eb; margin-top:0.5rem;">🏢 STEP 1: Setting Up Your Workspace (Entity)</h3>
             <ol style="padding-left:1.2rem; margin-top:0.25rem;">
-                <li><strong>Setup Workspace & Projects:</strong> Enter your Entity name, then use the top project bar to create new card designs or switch between projects.</li>
-                <li><strong>Design Layout (Tab 1):</strong> Add shapes, text labels, barcodes, QR codes, photo areas, or logos. Double-click any text box to type, highlight words, and press <strong>Enter</strong> for new lines! Text will automatically resize if it reaches the bottom or right edge.</li>
-                <li><strong>Canvas Toolbar & Shortcuts:</strong> Use the frozen toolbar right above the canvas (Undo, Redo, Cut, Copy, Paste, Delete) or keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y`, `Ctrl+C`, `Ctrl+X`, `Ctrl+V`, `Delete`).</li>
-                <li><strong>Map Database Fields:</strong> Select any text label, barcode, or photo on your card, and change its <em>Data Source</em> to <strong>Database</strong> in the right-side inspector panel.</li>
-                <li><strong>Populate Database (Tab 2):</strong> Add your employee or member records, upload pictures, and check the boxes for who you want to print.</li>
-                <li><strong>Generate & Print (Tab 3):</strong> Review your generated cards. You can drag photos to center faces or use the zoom slider. Click <strong>Print Cards</strong>.</li>
+                <li>When you first open the app, a pop-up window asks for your <strong>Entity / Workspace Name</strong> (e.g., your company, school, or gym name like <em>GymKoto</em>). Type it in and click <strong>Enter Workspace</strong>. This keeps your designs and member lists safely saved in your browser.</li>
+                <li>To switch to a different workspace later, click the <strong>[Switch Entity]</strong> button at the top-left corner of the dark top bar.</li>
             </ol>
 
-            <h3 style="color:#2563eb; margin-top:1.5rem;">💡 Frequently Asked Questions</h3>
-            <p><strong>Q: How do I print dual-sided (front and back) cards?</strong><br>
-            A: In Tab 1, set <strong>Card Format</strong> to <em>Dual-Sided (Front & Back)</em>. Back design controls will appear, allowing you to add elements to the back canvas.</p>
+            <h3 style="color:#2563eb; margin-top:1.2rem;">🎨 STEP 2: Designing Your ID Card Layout (Tab 1)</h3>
+            <ol style="padding-left:1.2rem; margin-top:0.25rem;">
+                <li><strong>Manage Projects:</strong> Use the top dropdown menu to switch between different card designs, or click <strong>+ Create New Design</strong> to start a brand new project.</li>
+                <li><strong>Format & Orientation:</strong> On the left-hand sidebar, choose whether your card is <em>Single-Sided</em> or <em>Dual-Sided (Front & Back)</em>, and whether it is <em>Portrait (Vertical)</em> or <em>Landscape (Horizontal)</em>.</li>
+                <li><strong>Background Colors & Images:</strong> 
+                    <ul>
+                        <li>Pick independent background colors for your Front and Back cards. If you want both sides to have the exact same color, click the <strong>"Match Back Color to Front"</strong> button.</li>
+                        <li>Upload custom background images separately for the Front and Back sides using the upload buttons.</li>
+                    </ul>
+                </li>
+                <li><strong>Adding Design Elements:</strong> Click buttons like <em>+ Shape Banner</em>, <em>+ Text Label</em>, <em>+ Barcode / QR</em>, or <em>+ Add Photo Area</em> under the Front or Back sections to drop elements onto your canvas.</li>
+                <li><strong>Moving & Resizing:</strong> Click and drag any item on the card preview to move it freely. Grab the small white circle at the bottom-right corner of a selected item to resize its width and height.</li>
+                <li><strong>Typing & Auto-Resizing Text:</strong> 
+                    <ul>
+                        <li><strong>Double-click</strong> inside any text box on the canvas to open direct typing mode. You can type normally, highlight words with your mouse, and press <strong>Enter</strong> to create multi-line text.</li>
+                        <li>As you type, the text will <strong>automatically resize and shrink</strong> if it reaches the bottom or right edge of the text box!</li>
+                        <li>Press <strong>Escape</strong> or click outside the text box to save and lock your text.</li>
+                    </ul>
+                </li>
+                <li><strong>Right-Side Inspector Panel:</strong> When you click any element on your card, the right sidebar will instantly show its advanced properties (such as font size, text color, horizontal alignment, vertical alignment [Top, Center, Bottom], data source mapping, and delete buttons).</li>
+            </ol>
 
-            <p><strong>Q: How do I get my IDP SMART-51 printer to format cards correctly without extra pages?</strong><br>
-            A: In your browser's print dialog, set <strong>Scale</strong> to <strong>100%</strong> (or Actual Size), set <strong>Margins</strong> to <strong>None</strong>, and disable headers/footers.</p>
+            <h3 style="color:#2563eb; margin-top:1.2rem;">🗂️ STEP 3: Populating Your Member Database (Tab 2)</h3>
+            <ol style="padding-left:1.2rem; margin-top:0.25rem;">
+                <li>Any text, barcode, or photo element set to <strong>Database</strong> data source in Tab 1 will automatically create a column here.</li>
+                <li>Fill in the text fields and upload individual profile pictures for each person, then click <strong>Add to Database</strong>.</li>
+                <li>Make sure the checkboxes in the <strong>Print</strong> column are checked for the individuals you want to generate and print cards for.</li>
+            </ol>
+
+            <h3 style="color:#2563eb; margin-top:1.2rem;">🖨️ STEP 4: Generating, Adjusting & Printing Cards (Tab 3)</h3>
+            <ol style="padding-left:1.2rem; margin-top:0.25rem;">
+                <li>Click on <strong>3. Generate & Edit Cards</strong> to review all generated front and back cards populated with your database records.</li>
+                <li><strong>Face Adjustment:</strong> If a member's photo needs centering, click on their photo card preview. A face adjustment toolbar will appear at the top, allowing you to use the zoom slider or drag the photo with your mouse to center their face.</li>
+                <li><strong>Printing Guide for All IDP Printers (SMART-31, SMART-51, SMART-70, etc.):</strong>
+                    <ul>
+                        <li>Click the <strong>Print Cards</strong> button.</li>
+                        <li>In your browser's print preview window, ensure your IDP printer is selected.</li>
+                        <li>Set <strong>Scale</strong> or Page Size to **100%** (or *Actual Size*).</li>
+                        <li>Set <strong>Margins</strong> to **None**.</li>
+                        <li>Disable headers and footers.</li>
+                        <li>This ensures every card prints perfectly aligned on standard CR-80 cards without generating extra blank pages.</li>
+                    </ul>
+                </li>
+            </ol>
         </div>
 
         <div style="text-align:right; margin-top:1.5rem; border-top:1px solid #e5e7eb; padding-top:1rem;">
