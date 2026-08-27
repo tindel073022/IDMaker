@@ -420,7 +420,6 @@
         .el-text {
             font-weight: bold;
             display: flex;
-            align-items: flex-start;
             overflow: hidden;
             white-space: pre-wrap;
             word-break: break-word;
@@ -536,7 +535,7 @@
             <h3 style="color:#2563eb; margin-top:1rem;">📖 How to Use the App</h3>
             <ol style="padding-left:1.2rem; margin-top:0.25rem;">
                 <li><strong>Setup Workspace & Projects:</strong> Enter your Entity name, then use the top project bar to create new card designs or switch between projects.</li>
-                <li><strong>Design Layout (Tab 1):</strong> Add shapes, text labels, barcodes, QR codes, photo areas, or logos. Double-click any text box to type, highlight words, and press <strong>Enter</strong> for new lines!</li>
+                <li><strong>Design Layout (Tab 1):</strong> Add shapes, text labels, barcodes, QR codes, photo areas, or logos. Double-click any text box to type, highlight words, and press <strong>Enter</strong> for new lines! Text will automatically resize if it reaches the bottom or right edge.</li>
                 <li><strong>Canvas Toolbar & Shortcuts:</strong> Use the frozen toolbar right above the canvas (Undo, Redo, Cut, Copy, Paste, Delete) or keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y`, `Ctrl+C`, `Ctrl+X`, `Ctrl+V`, `Delete`).</li>
                 <li><strong>Map Database Fields:</strong> Select any text label, barcode, or photo on your card, and change its <em>Data Source</em> to <strong>Database</strong> in the right-side inspector panel.</li>
                 <li><strong>Populate Database (Tab 2):</strong> Add your employee or member records, upload pictures, and check the boxes for who you want to print.</li>
@@ -725,6 +724,10 @@
                            id="backBgColorInput"
                            value="#ffffff"
                            oninput="updateBackBgColor(this.value)">
+                </div>
+
+                <div class="form-group" id="syncBgGroup" style="display:none;">
+                    <button type="button" class="secondary-btn" style="width:100%; margin-bottom:0; background:#334155;" onclick="syncBackToFrontColor()">Match Back Color to Front</button>
                 </div>
 
                 <hr style="border:0; border-top:1px solid var(--border); margin:1.5rem 0;">
@@ -1068,9 +1071,9 @@
             backBgImage: '',
             elements: [
                 { id: 'f_banner', side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 0, width: 220, height: 65, bg: '#2563eb', isThemeable: true },
-                { id: 'f_org', side: 'front', type: 'text', dataSource: 'static', content: 'COMPANY NAME', x: 15, y: 20, width: 180, height: 30, fontSize: '15px', color: '#ffffff', align: 'center' },
+                { id: 'f_org', side: 'front', type: 'text', dataSource: 'static', content: 'COMPANY NAME', x: 15, y: 20, width: 180, height: 30, fontSize: '15px', color: '#ffffff', align: 'center', verticalAlign: 'flex-start' },
                 { id: 'f_photo', side: 'front', type: 'photo', dataSource: 'database', dbField: 'Photo', x: 62, y: 85, width: 80, height: 80, imageShape: 'circle' },
-                { id: 'f_name', side: 'front', type: 'text', dataSource: 'database', dbField: 'Full Name', content: '{val}', x: 15, y: 190, width: 180, height: 30, fontSize: '18px', color: '#1f2937', align: 'center' },
+                { id: 'f_name', side: 'front', type: 'text', dataSource: 'database', dbField: 'Full Name', content: '{val}', x: 15, y: 190, width: 180, height: 30, fontSize: '18px', color: '#1f2937', align: 'center', verticalAlign: 'flex-start' },
                 { id: 'f_barcode', side: 'front', type: 'barcode', dataSource: 'database', dbField: 'ID Number', content: '12345678', barcodeType: 'CODE128', x: 20, y: 240, width: 160, height: 50 },
                 { id: 'f_footer', side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 310, width: 220, height: 20, bg: '#2563eb', isThemeable: true }
             ],
@@ -1219,16 +1222,6 @@
 
     function initEntitySession() {
         if (!currentEntity) {
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
-                if (key && key.startsWith('id_maker_store_')) {
-                    currentEntity = key.replace('id_maker_store_', '');
-                    localStorage.setItem('id_maker_active_entity', currentEntity);
-                    break;
-                }
-            }
-        }
-        if (!currentEntity) {
             document.getElementById('entityModal').style.display = 'flex';
         } else {
             document.getElementById('entityModal').style.display = 'none';
@@ -1258,7 +1251,10 @@
 
     function switchEntityPrompt() {
         localStorage.removeItem('id_maker_active_entity');
-        location.reload();
+        currentEntity = '';
+        document.getElementById('entityModal').style.display = 'flex';
+        document.getElementById('entityInputModal').value = '';
+        document.getElementById('entityInputModal').focus();
     }
 
     function loadEntityData() {
@@ -1316,6 +1312,9 @@
         p.elements.forEach(el => {
             if (el.type === 'shape' && el.isThemeable === true) {
                 el.bg = p.themeColor;
+            }
+            if (el.type === 'text' && !el.verticalAlign) {
+                el.verticalAlign = 'flex-start';
             }
         });
         return p;
@@ -1437,7 +1436,7 @@
             backBgImage: '',
             elements: [
                 { id: 'f_banner_' + timestamp, side: 'front', type: 'shape', shapeType: 'rectangle', dataSource: 'static', x: -5, y: 0, width: 220, height: 65, bg: '#059669', isThemeable: true },
-                { id: 'f_name_' + timestamp, side: 'front', type: 'text', dataSource: 'database', dbField: 'Full Name', content: '{val}', x: 15, y: 150, width: 180, height: 30, fontSize: '18px', color: '#1f2937', align: 'center' }
+                { id: 'f_name_' + timestamp, side: 'front', type: 'text', dataSource: 'database', dbField: 'Full Name', content: '{val}', x: 15, y: 150, width: 180, height: 30, fontSize: '18px', color: '#1f2937', align: 'center', verticalAlign: 'flex-start' }
             ],
             db: []
         };
@@ -1472,6 +1471,19 @@
         if (active.backBgColor === val) return;
         pushHistory();
         active.backBgColor = val;
+        saveStateInternal();
+        applyBackgroundsToCanvases();
+        if (document.getElementById('print').classList.contains('active')) {
+            generateCards();
+        }
+    }
+
+    function syncBackToFrontColor() {
+        const active = getActiveProject();
+        if (active.backBgColor === active.frontBgColor) return;
+        pushHistory();
+        active.backBgColor = active.frontBgColor;
+        document.getElementById('backBgColorInput').value = active.frontBgColor;
         saveStateInternal();
         applyBackgroundsToCanvases();
         if (document.getElementById('print').classList.contains('active')) {
@@ -1558,8 +1570,29 @@
         if (active.format === val) return;
         pushHistory();
         active.format = val;
+
+        // Automatically add a sample back element if none exist when switching to dual-sided
+        if (val === 'dual' && !active.elements.some(el => el.side === 'back')) {
+            active.elements.push({
+                id: 'b_text_' + Date.now(),
+                side: 'back',
+                type: 'text',
+                dataSource: 'static',
+                content: 'Property of the Organization\nIf found, please return to office.',
+                x: 15,
+                y: 120,
+                width: 180,
+                height: 80,
+                fontSize: '12px',
+                color: '#4b5563',
+                align: 'center',
+                verticalAlign: 'center'
+            });
+        }
+
         saveStateInternal();
         updateFormatUI();
+        renderTemplateCanvas();
         renderElementEditor();
         if (document.getElementById('print').classList.contains('active')) {
             generateCards();
@@ -1688,6 +1721,7 @@
         document.getElementById('backCanvasContainer').style.display = isDual ? 'flex' : 'none';
         document.getElementById('addBackControls').style.display = isDual ? 'block' : 'none';
         document.getElementById('backBgColorGroup').style.display = isDual ? 'block' : 'none';
+        document.getElementById('syncBgGroup').style.display = isDual ? 'block' : 'none';
         document.getElementById('backBgImageControls').style.display = isDual ? 'block' : 'none';
     }
 
@@ -1776,6 +1810,7 @@
             newEl.fontSize = '14px';
             newEl.color = '#1f2937';
             newEl.align = 'center';
+            newEl.verticalAlign = 'flex-start';
         } else if (type === 'barcode') {
             newEl.dataSource = 'database';
             newEl.dbField = 'ID Number';
@@ -1880,6 +1915,20 @@
         else highlightSelectedElement();
     }
 
+    function fitTextToBox(span, elData) {
+        let baseSize = parseFloat(elData.fontSize) || 14;
+        span.style.fontSize = baseSize + 'px';
+        
+        let maxHeight = elData.height || 30;
+        let maxWidth = elData.width || 150;
+        
+        let currentSize = baseSize;
+        while ((span.scrollHeight > maxHeight || span.scrollWidth > maxWidth) && currentSize > 6) {
+            currentSize -= 0.5;
+            span.style.fontSize = currentSize + 'px';
+        }
+    }
+
     function createDOMElement(elData, recordData, scaleFactor = 1, isTemplateCanvas = false) {
         const active = getActiveProject();
         const div = document.createElement('div');
@@ -1913,6 +1962,7 @@
 
             div.style.transform = 'none';
             const alignment = elData.align || 'center';
+            const vAlignment = elData.verticalAlign || 'flex-start';
 
             if (alignment === 'left') {
                 div.style.justifyContent = 'flex-start';
@@ -1924,6 +1974,8 @@
                 div.style.justifyContent = 'center';
                 div.style.textAlign = 'center';
             }
+
+            div.style.alignItems = vAlignment;
 
             if (elData.textBg) {
                 div.style.backgroundColor = elData.textBg;
@@ -1949,6 +2001,9 @@
             span.style.textAlign = alignment;
             span.dataset.elementText = 'true';
             div.appendChild(span);
+
+            // Apply auto-resize fitting
+            fitTextToBox(span, elData);
 
             if (isTemplateCanvas) {
                 let textEditHistoryPushed = false;
@@ -2009,6 +2064,7 @@
                     }
 
                     elData.content = span.innerText.replace(/\r\n/g, '\n');
+                    fitTextToBox(span, elData);
                     saveStateInternal();
                 });
 
@@ -2319,6 +2375,7 @@
             }
 
             const currentAlign = el.align || 'center';
+            const currentVAlign = el.verticalAlign || 'flex-start';
 
             html += `
                 <div style="display:flex; gap:1rem;">
@@ -2342,11 +2399,19 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Alignment</label>
+                    <label>Horizontal Alignment</label>
                     <select onchange="updateSelectedElementProp('align', this.value, true)">
                         <option value="left" ${currentAlign === 'left' ? 'selected' : ''}>Left</option>
                         <option value="center" ${currentAlign === 'center' ? 'selected' : ''}>Center</option>
                         <option value="right" ${currentAlign === 'right' ? 'selected' : ''}>Right</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Vertical Alignment</label>
+                    <select onchange="updateSelectedElementProp('verticalAlign', this.value, true)">
+                        <option value="flex-start" ${currentVAlign === 'flex-start' ? 'selected' : ''}>Top</option>
+                        <option value="center" ${currentVAlign === 'center' ? 'selected' : ''}>Center</option>
+                        <option value="flex-end" ${currentVAlign === 'flex-end' ? 'selected' : ''}>Bottom</option>
                     </select>
                 </div>
                 <div class="form-group">
