@@ -560,16 +560,16 @@
                 <li><strong>Right-Side Inspector Panel:</strong> When you click any element on your card, the right sidebar will instantly show its advanced properties (such as font size, text color, horizontal alignment, vertical alignment [Top, Center, Bottom], data source mapping, and delete buttons).</li>
             </ol>
 
-            <h3 style="color:#2563eb; margin-top:1.2rem;">🗂️ STEP 3: Populating Your Member Database (Tab 2)</h3>
+            <h3 style="color:#2563eb; margin-top:1.2rem;">🗂️ STEP 3: Populating Your Member Database (Tab 2) — *Optional*</h3>
             <ol style="padding-left:1.2rem; margin-top:0.25rem;">
-                <li>Any text, barcode, or photo element set to <strong>Database</strong> data source in Tab 1 will automatically create a column here.</li>
-                <li>Fill in the text fields and upload individual profile pictures for each person, then click <strong>Add to Database</strong>.</li>
-                <li>Make sure the checkboxes in the <strong>Print</strong> column are checked for the individuals you want to generate and print cards for.</li>
+                <li>If you are printing regular cards without a database batch, you can **skip this tab entirely** and go straight to Tab 3 to print your raw design template.</li>
+                <li>If you are printing for multiple people, any text, barcode, or photo element set to <strong>Database</strong> data source in Tab 1 will automatically create a column here.</li>
+                <li>Fill in the text fields and upload individual profile pictures for each person, then click <strong>Add to Database</strong>. Make sure the checkboxes in the <strong>Print</strong> column are checked.</li>
             </ol>
 
             <h3 style="color:#2563eb; margin-top:1.2rem;">🖨️ STEP 4: Generating, Adjusting & Printing Cards (Tab 3)</h3>
             <ol style="padding-left:1.2rem; margin-top:0.25rem;">
-                <li>Click on <strong>3. Generate & Edit Cards</strong> to review all generated front and back cards populated with your database records.</li>
+                <li>Click on <strong>3. Generate & Edit Cards</strong> to review your generated cards or raw design template.</li>
                 <li><strong>Face Adjustment:</strong> If a member's photo needs centering, click on their photo card preview. A face adjustment toolbar will appear at the top, allowing you to use the zoom slider or drag the photo with your mouse to center their face.</li>
                 <li><strong>Printing Guide for All IDP Printers (SMART-31, SMART-51, SMART-70, etc.):</strong>
                     <ul>
@@ -936,6 +936,8 @@
                     <button onclick="actionCopy()">📋 Copy</button>
                     <button onclick="actionPaste()">📄 Paste</button>
                     <button onclick="actionDelete()" style="background:#b91c1c; border-color:#991b1b;">🗑️ Delete</button>
+                    <span style="border-left: 1px solid #475569; height: 16px; margin: 0 0.25rem;"></span>
+                    <button onclick="printRawDesign()" style="background:#0284c7; border-color:#0369a1;">🖨️ Print Raw</button>
                 </div>
 
                 <div class="canvas-stack">
@@ -2019,7 +2021,7 @@
 
             let displayText = '';
             if (elData.dataSource === 'database') {
-                const dbVal = recordData && recordData.fields ? (recordData.fields[elData.dbField] || '') : `[${elData.dbField || '?'}]`;
+                const dbVal = recordData && recordData.fields && recordData.fields[elData.dbField] ? recordData.fields[elData.dbField] : `[${elData.dbField || '?'}]`;
                 const mask = elData.content || '{val}';
                 displayText = mask.includes('{val}') ? mask.replace('{val}', dbVal) : dbVal;
             } else {
@@ -2127,7 +2129,7 @@
 
             let bVal = '12345678';
             if (elData.dataSource === 'database') {
-                bVal = recordData && recordData.fields ? (recordData.fields[elData.dbField] || '12345678') : `[${elData.dbField || 'ID'}]`;
+                bVal = recordData && recordData.fields && recordData.fields[elData.dbField] ? recordData.fields[elData.dbField] : `[${elData.dbField || 'ID'}]`;
             } else {
                 bVal = elData.content || '12345678';
             }
@@ -2949,12 +2951,12 @@
         const helperText = document.getElementById('printHelperText');
 
         const databaseRecords = Array.isArray(active.db) ? active.db : [];
-        const recordsToPrint = databaseRecords.filter(record => record.selectedToPrint !== false);
+        let recordsToPrint = databaseRecords.filter(record => record.selectedToPrint !== false);
 
+        let isRawTemplate = false;
         if (recordsToPrint.length === 0) {
-            grid.innerHTML = `<p style="color:#6b7280;">No records selected for printing. Check boxes in the Database tab.</p>`;
-            helperText.innerText = '';
-            return;
+            isRawTemplate = true;
+            recordsToPrint = [{ id: 'raw_template', fields: {} }];
         }
 
         const isLandscape = active.orientation === 'landscape';
@@ -2970,7 +2972,7 @@
                 generatedElements.push(el);
             });
 
-            const displayLabel = record.fields && (record.fields['Full Name'] || record.fields['Name']) ? (record.fields['Full Name'] || record.fields['Name']) : `Person ${index + 1}`;
+            const displayLabel = isRawTemplate ? 'Raw Design Template' : (record.fields && (record.fields['Full Name'] || record.fields['Name']) ? (record.fields['Full Name'] || record.fields['Name']) : `Person ${index + 1}`);
 
             // FRONT
             const frontWrapper = document.createElement('div');
@@ -2998,7 +3000,7 @@
             frontWrapper.appendChild(frontCard);
             const fLabel = document.createElement('div');
             fLabel.className = 'card-label';
-            fLabel.innerText = `Card ${index + 1} (Front): ${displayLabel}`;
+            fLabel.innerText = isRawTemplate ? 'Raw Design Template (Front)' : `Card ${index + 1} (Front): ${displayLabel}`;
             frontWrapper.appendChild(fLabel);
             grid.appendChild(frontWrapper);
 
@@ -3029,19 +3031,129 @@
                 backWrapper.appendChild(backCard);
                 const bLabel = document.createElement('div');
                 bLabel.className = 'card-label';
-                bLabel.innerText = `Card ${index + 1} (Back): ${displayLabel}`;
+                bLabel.innerText = isRawTemplate ? 'Raw Design Template (Back)' : `Card ${index + 1} (Back): ${displayLabel}`;
                 backWrapper.appendChild(bLabel);
                 grid.appendChild(backWrapper);
             }
         });
 
-        helperText.innerText = active.format === 'dual' ? `Generated ${recordsToPrint.length * 2} pages (Front and Back).` : `Generated ${recordsToPrint.length} pages.`;
+        helperText.innerText = isRawTemplate 
+            ? (active.format === 'dual' ? 'Displaying raw design template (Front & Back) [No database records required].' : 'Displaying raw design template [No database records required].')
+            : (active.format === 'dual' ? `Generated ${recordsToPrint.length * 2} pages (Front and Back).` : `Generated ${recordsToPrint.length} pages.`);
     }
 
     function printCards() {
         requestAnimationFrame(function() {
             setTimeout(function() {
                 window.print();
+            }, 150);
+        });
+    }
+    
+    /* =========================================================
+       PRINT RAW DESIGN FUNCTION
+       ========================================================= */
+    function printRawDesign() {
+        const active = getActiveProject();
+        const isLandscape = active.orientation === 'landscape';
+        const cardWidth = isLandscape ? '3.375in' : '2.125in';
+        const cardHeight = isLandscape ? '2.125in' : '3.375in';
+        const wrapperClass = 'card-container-wrapper ' + (isLandscape ? 'landscape-wrapper' : 'portrait-wrapper');
+
+        // Create temporary container
+        const tempContainer = document.createElement('div');
+        tempContainer.id = 'tempRawPrintContainer';
+        tempContainer.className = 'print-grid';
+        tempContainer.style.display = 'block';
+
+        // Add a special print class to body to hide normal app UI elements during raw printing
+        document.body.classList.add('raw-printing-mode');
+
+        // Pass an empty DB object to force raw mask formatting instead of db mappings
+        const rawFallbackRecord = { fields: {} };
+
+        // Generate Front
+        const frontWrapper = document.createElement('div');
+        frontWrapper.className = wrapperClass + ' front-card-wrapper';
+
+        const frontCard = document.createElement('div');
+        frontCard.className = 'id-card';
+        frontCard.style.setProperty('width', cardWidth, 'important');
+        frontCard.style.setProperty('height', cardHeight, 'important');
+        frontCard.style.setProperty('background-color', active.frontBgColor || '#ffffff', 'important');
+        
+        if (active.frontBgImage) {
+            frontCard.style.setProperty('background-image', `url("${active.frontBgImage}")`, 'important');
+        } else {
+            frontCard.style.setProperty('background-image', 'none', 'important');
+        }
+        
+        frontCard.style.backgroundSize = 'cover';
+        frontCard.style.backgroundPosition = 'center';
+        frontCard.style.backgroundRepeat = 'no-repeat';
+
+        // Clone elements for Front (raw mode - passing rawFallbackRecord instead of a db record)
+        active.elements.filter(el => el.side === 'front').forEach(el => {
+            frontCard.appendChild(createDOMElement(el, rawFallbackRecord, 1.5, false));
+        });
+        
+        frontWrapper.appendChild(frontCard);
+        tempContainer.appendChild(frontWrapper);
+
+        // Generate Back if dual
+        if (active.format === 'dual') {
+            const backWrapper = document.createElement('div');
+            backWrapper.className = wrapperClass + ' back-card-wrapper';
+
+            const backCard = document.createElement('div');
+            backCard.className = 'id-card';
+            backCard.style.setProperty('width', cardWidth, 'important');
+            backCard.style.setProperty('height', cardHeight, 'important');
+            backCard.style.setProperty('background-color', active.backBgColor || '#ffffff', 'important');
+            
+            if (active.backBgImage) {
+                backCard.style.setProperty('background-image', `url("${active.backBgImage}")`, 'important');
+            } else {
+                backCard.style.setProperty('background-image', 'none', 'important');
+            }
+            
+            backCard.style.backgroundSize = 'cover';
+            backCard.style.backgroundPosition = 'center';
+            backCard.style.backgroundRepeat = 'no-repeat';
+
+            active.elements.filter(el => el.side === 'back').forEach(el => {
+                backCard.appendChild(createDOMElement(el, rawFallbackRecord, 1.5, false));
+            });
+            
+            backWrapper.appendChild(backCard);
+            tempContainer.appendChild(backWrapper);
+        }
+
+        document.body.appendChild(tempContainer);
+
+        // Inject temp CSS to handle visibility during raw print without affecting standard generation tab print
+        const style = document.createElement('style');
+        style.id = 'tempRawPrintStyle';
+        style.innerHTML = `
+            @media print {
+                body.raw-printing-mode > .container { display: none !important; }
+                body.raw-printing-mode #tempRawPrintContainer { display: block !important; width: 100% !important; }
+            }
+            @media screen {
+                #tempRawPrintContainer { display: none !important; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Trigger print, then cleanup
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                window.print();
+                
+                // Cleanup after print dialog closes
+                document.body.classList.remove('raw-printing-mode');
+                tempContainer.remove();
+                style.remove();
             }, 150);
         });
     }
